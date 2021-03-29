@@ -52,6 +52,5 @@ ggplot(test, aes(x = Interval, y = AV_height, col = SITE)) +
                     labels = c("Upland", "Lowland"),
                     name = "Site")
 
- summary(fine$HEIGHT)
 
  
