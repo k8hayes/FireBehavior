@@ -7,7 +7,6 @@ library(cowplot)
 library(here)
 theme_set(theme_cowplot())
 
-
 # pulls data in from csv file, assigns it as an object
 dalt <- read.csv(here("data/dispersal/Dalton_spp_distance_2021.csv"))
 stee <- read.csv(here("data/dispersal/Steese_spp_dist_2021.csv"))
@@ -71,7 +70,8 @@ stee <- read.csv(here("data/dispersal/Steese_spp_dist_2021.csv"))
                           y = "Distance (meters)",
                           title = "Distance between Species")
 
-
-
-
-
+# test of eberhardt's statistic
+  x <- rpois(2000,10)
+  hist(x)
+  length(x)*(sum(x^2)/sum(x^2))  # didn't write this down right, check this code
+  
