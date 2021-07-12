@@ -64,6 +64,7 @@ stee <- read.csv(here("data/dispersal/Steese_spp_dist_2021.csv"))
   # graphing all species distances
   data %>%
     filter(Species != "UKN") %>%
+    filter(Distance_m != "NA") %>%
     ggplot(aes(x = as.factor(Fires), y = Distance_m, fill = Species)) + 
     geom_boxplot() + facet_wrap(~Site) + 
     labs(x = "Number of Fires", 
