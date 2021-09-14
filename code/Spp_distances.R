@@ -8,13 +8,14 @@ library(here)
 theme_set(theme_cowplot())
 
 # pulls data in from csv file, assigns it as an object
-dalt <- read.csv(here("data/dispersal/Dalton_spp_distance_2021.csv"))
-stee <- read.csv(here("data/dispersal/Steese_spp_dist_2021.csv"))
+dalt <- read.csv(here("data/distances/Dalton_spp_distance_2021.csv"))
+stee <- read.csv(here("data/distances/Steese_spp_dist_2021.csv"))
 
 # Data checks ############################
  
  # tells me how r is viewing the meter data
   class(dalt$Distance_m)
+  class(stee$Distance_m)
 
   # summarizes the data for distance in feet (mean, min, max, etc)
   summary(dalt$Distance_ft)
@@ -36,9 +37,6 @@ stee <- read.csv(here("data/dispersal/Steese_spp_dist_2021.csv"))
   colnames(stee)
 
 # Data changes #####################
-  # fixing typo
-  
-  dalt$Species[dalt$Species == "UKN"] <- "UNK"
   
   # combining data files!! 
   combined <- rbind(dalt,stee)
