@@ -23,6 +23,8 @@ stee <- read.csv(here("data/distances/Steese_spp_dist_2021.csv"))
   # tells me unique entries for species column
   unique(dalt$Species) # good way of checking if i've entered columns correctly
   unique(stee$Species)
+  
+  dalt$Species[dalt$Species == "UKN"] <- "UNK"
 
   # check plot names
   unique(dalt$Plot)
@@ -52,7 +54,7 @@ stee <- read.csv(here("data/distances/Steese_spp_dist_2021.csv"))
     select(!Distance_ft) # drop extra column
 
   # exporting combined file
-  write.csv(combined, "data/dispersal/Spp_dist_2021.csv", row.names = F)
+  write.csv(combined, "data/distances/Spp_dist_2021.csv", row.names = F)
   
   data <- combined
   rm(stee,dalt,combined)
@@ -61,14 +63,23 @@ stee <- read.csv(here("data/distances/Steese_spp_dist_2021.csv"))
   
   # graphing all species distances
   data %>%
-    filter(Species != "UKN") %>%
-    filter(Distance_m != "NA") %>%
-    ggplot(aes(x = as.factor(Fires), y = Distance_m, fill = Species)) + 
-    geom_boxplot() + facet_wrap(~Site) + 
+    filter(SPP != "UNK") %>%
+    filter(DIST_M != "NA") %>%
+    ggplot(aes(x = as.factor(TREAT), y = DIST_M, fill = SPP)) + 
+    geom_boxplot() + facet_wrap(~SITE) + 
     labs(x = "Number of Fires", 
                           y = "Distance (meters)",
-                          title = "Distance between Species")
-
+                          title = "Distance between Species") + 
+    scale_fill_manual(name = "Species",
+                      labels = c("Alder", "Dwarf Birch", "Birch", "Spruce", "Aspen",
+                                 "Willow"),
+                      values = c("#a6cee3","#1f78b4","#b2df8a",
+                                 "#33a02c","#fb9a99","#e31a1c"))
+  
+  # checking outlier
+  # data[data$DIST_M > 30,] # error - it's 32.5 m but supposed to be feet
+  data[data$DIST_M > 20,] # these are real
+  
 # test of eberhardt's statistic
   x <- rpois(2000,10)
   hist(x)
