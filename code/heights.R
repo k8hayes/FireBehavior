@@ -15,7 +15,9 @@ ggplot(height, aes(x = as.factor(TREAT), y = HEIGHT_M, fill = SITE)) +
 site_names <- c('DALTON' = "Upland",
                 'STEESE' = "Lowland") # comes from https://stackoverflow.com/questions/3472980/how-to-change-facet-labels
 
-ggplot(height, aes(x = as.factor(TREAT), y = HEIGHT_M, fill = SPP)) + 
+height %>%
+  filter(TREAT >0 ) %>%
+  ggplot(aes(x = as.factor(TREAT), y = HEIGHT_M, fill = SPP)) + 
   geom_boxplot() + facet_wrap( ~ SITE, labeller = as_labeller(site_names) ) + 
   labs(x = "Number of Fires", y = "Height (m)", 
        title = "Species Height Distributions") + 
