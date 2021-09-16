@@ -36,11 +36,19 @@ n <- as.data.frame(n)
 
 n[n$`n()` == 1,]
 
-dbh %>%
+clumpind <- dbh %>%
   filter(STEM_TYPE == "CLUMP") %>%
   group_by(SITE, TREAT, PLOT, CLUMP_ID) %>%
   summarise(DBH_CM = mean(DBH_CM), CANOPY = mean(CANOPY), 
-            HEIGHT_M = mean(HEIGHT_M), SPP = SPP)
+            HEIGHT_M = mean(HEIGHT_M), DIV = unique(DIV),
+            SPP = unique(SPP), 
+            STEM_TYPE = unique(STEM_TYPE))
+ind <- dbh %>%
+  filter(STEM_TYPE == "IND") %>%
+  select(!c(CLUMP_TYPE, BROW_INDEX, B_TYPE,
+            MAX_B_WIDTH))
 
+dbh_clumpsas1 <- rbind(clumpind, ind)
 
+write.csv(dbh_clumpsas1, here("data/dbh_clumpsas1.csv"), row.names = FALSE)
 
