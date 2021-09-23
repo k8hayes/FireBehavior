@@ -14,11 +14,11 @@ dbh <- read.csv(here("data/dbh_clumpsas1.csv"))
       filter(TREAT == 1) %>%
       group_by(PLOT) %>%
       summarise(n = n())
-    round(mean(meantree1$n)) # 119
+    round(mean(meantree1$n)) # 175
 
   # generating point cloud  
-  x <- round(runif(119, 0, 20))
-  y <- round(runif(119, 0, 20))
+  x <- round(runif(round(mean(meantree1$n)), 0, 20))
+  y <- round(runif(round(mean(meantree1$n)), 0, 20))
 
   plot(x,y)
 
@@ -89,10 +89,6 @@ dbh <- read.csv(here("data/dbh_clumpsas1.csv"))
                                                 1 - meanCan1$prob[meanCan1$SPP == "ARCTO"]),
                                   conditions = c(1,0))
   loc <- rbind(pime_loc, bene_loc, potr_loc, salix_loc, arcto_loc, alcr_loc)
-  
-  
-  
-  
   
   ## Height ##################################   
    # what's the average height per species within 1x burns
