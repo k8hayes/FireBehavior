@@ -11,6 +11,7 @@ herb2019[3200,]
 # checking which plots have dead pime entered
 pime2019 <- herb2019 %>%
   filter(SPP== "PIME") %>%
+  filter(HEIGHT_M >0) %>%
   filter(! is.na(CANOPY)) # one un-entered canopy from a spruce # 33_1
 
 unique(pime2019$PLOT)
@@ -31,6 +32,35 @@ pime2018dead <- dbh2018 %>%
   filter(CANOPY == 0)
 
 unique(pime2018dead$PLOT)
+
+# adding height to 2018 spruce
+
+
+test <- ss_modelselect_multi(pime2019,
+                             species = "SPP",
+                             response = "HEIGHT_M",
+                             predictor = "DBH_CM")
+test
+
+testpred <- ss_simulate(ref_table = test$ss_models_info,
+                         models = test$ss_models,
+                         extrapolate = c(0,0.5))
+
+add2018$HEIGHT_M <- exp(1.308392 + 1.451135*log(log(add2018$DBH_CM + 1)))
+
+ggplot() +
+  geom_point(data = pime2019, aes(x = DBH_CM, y = HEIGHT_M)) +
+  geom_ribbon(data = testpred, aes(x = predictor, ymin = lwr, ymax = upr), 
+              alpha = 0.1) + 
+  geom_line(data = testpred, aes(x = predictor, y = fit, lty = extrapolated)) +
+  coord_cartesian(ylim = c(0, max(pime2019$HEIGHT_M)),
+                  xlim = c(0, max(testpred$predictor))) + 
+  geom_point(data = add2018, aes(x = DBH_CM, y = HEIGHT_M), col = "red")
+
+test$ss_models_info
+
+data(eqns_info, package = "allometree")
+eqns_info
 
 add2018 <- pime2018dead %>%
   filter(PLOT != "32_2") %>%
