@@ -176,4 +176,6 @@ dbh <- read.csv(here("data/dbh_clumpsas1.csv"))
   loc$FOL_BIOMASS[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "SALIX"],
                                                    sd = biomass_fol$SD[biomass_fol$SPP == "SALIX"])
 
+  # setting dead trees to have foliar biomass = 0
+  loc$FOL_BIOMASS[loc$LIVE_DEAD ==0] <- 0
    
