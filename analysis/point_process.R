@@ -8,6 +8,10 @@ library(randomizr) # https://cran.r-project.org/web/packages/randomizr/vignettes
 
 dbh <- read.csv(here("data/dbh_clumpsas1.csv"))
 
+# taking ARCTO out for now
+dbh <- dbh %>%
+  filter(SPP != "ARCTO")
+
 # Points #########################
   # mean number of trees per plot
     meantree1 <- dbh %>%
@@ -82,13 +86,13 @@ dbh <- read.csv(here("data/dbh_clumpsas1.csv"))
                                   prob_each = c(meanCan1$prob[meanCan1$SPP == "SALIX"],
                                                 1 - meanCan1$prob[meanCan1$SPP == "SALIX"]),
                                   conditions = c(1,0))
-  arcto_loc <- loc %>% 
-    filter(SPP == "ARCTO") 
-  arcto_loc$LIVE_DEAD <- simple_ra(N = nrow(arcto_loc),
-                                  prob_each = c(meanCan1$prob[meanCan1$SPP == "ARCTO"],
-                                                1 - meanCan1$prob[meanCan1$SPP == "ARCTO"]),
-                                  conditions = c(1,0))
-  loc <- rbind(pime_loc, bene_loc, potr_loc, salix_loc, arcto_loc, alcr_loc)
+  # arcto_loc <- loc %>% 
+    # filter(SPP == "ARCTO") 
+  # arcto_loc$LIVE_DEAD <- simple_ra(N = nrow(arcto_loc),
+                                  # prob_each = c(meanCan1$prob[meanCan1$SPP == "ARCTO"],
+                                  #               1 - meanCan1$prob[meanCan1$SPP == "ARCTO"]),
+                                  # conditions = c(1,0))
+  loc <- rbind(pime_loc, bene_loc, potr_loc, salix_loc, alcr_loc)
   
   ## Height ##################################   
    # what's the average height per species within 1x burns
@@ -117,8 +121,8 @@ dbh <- read.csv(here("data/dbh_clumpsas1.csv"))
                                        sd = height$SD[height$SPP == "PIME"])
   loc$HEIGHT[loc$SPP=="ALCR"] <- rtruncnorm(round(mean(meantree1$n)), a =0, mean = height$AV[height$SPP == "ALCR"],
                                        sd = height$SD[height$SPP == "ALCR"])
-  loc$HEIGHT[loc$SPP=="ARCTO"] <- rtruncnorm(round(mean(meantree1$n)), a = 0,mean = height$AV[height$SPP == "ARCTO"],
-                                       sd = height$SD[height$SPP == "ARCTO"])
+  # loc$HEIGHT[loc$SPP=="ARCTO"] <- rtruncnorm(round(mean(meantree1$n)), a = 0,mean = height$AV[height$SPP == "ARCTO"],
+                                #       sd = height$SD[height$SPP == "ARCTO"])
   loc$HEIGHT[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "SALIX"],
                                        sd = height$SD[height$SPP == "SALIX"])
   loc$HEIGHT <- round(loc$HEIGHT, digits = 2)
