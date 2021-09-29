@@ -12,28 +12,27 @@ dbh <- read.csv(here("data/dbh_clumpsas1.csv"))
 dbh <- dbh %>%
   filter(SPP != "ARCTO")
 
-# Scaling ########################
-unique(dbh$EXP_FACT)
-
 # Points #########################
   # mean number of trees per plot
     meantree1 <- dbh %>%
       filter(TREAT == 1) %>%
       group_by(PLOT) %>%
-      summarise(n = n())
-    round(mean(meantree1$n)) # 175
+      summarise(n = n(), QUAD = unique(QUAD), EXP_FACT = unique(EXP_FACT))
+    round(mean(meantree1$n)) # 399
     
     # scale up to 1000 * 400
+    meantree1$n_landscape <- meantree1$n * meantree1$EXP_FACT
     
-
+    round(mean(meantree1$n_landscape)) # 1031467
+    
   # generating point cloud  
-  x <- round(runif(round(mean(meantree1$n)), 0, 1000))
-  y <- round(runif(round(mean(meantree1$n)), 0, 400))
+  x <- round(runif(round(mean(meantree1$n_landscape)), 0, 1000))
+  y <- round(runif(round(mean(meantree1$n_landscape)), 0, 400))
 
-  plot(x,y)
+  system.time(plot(x,y))
 
-  loc <- cbind(x,y)
-  loc <- as.data.frame(loc)
+  system.time(loc <- cbind(x,y))
+  system.time(loc <- as.data.frame(loc))
 
 # Marks ####################
 
@@ -119,17 +118,17 @@ unique(dbh$EXP_FACT)
       # initializing column
         loc$HEIGHT_M <- 0
       
-  loc$HEIGHT_M[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "BENE"],
+  loc$HEIGHT_M[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = height$AV[height$SPP == "BENE"],
                                                   sd = height$SD[height$SPP == "BENE"])
-  loc$HEIGHT_M[loc$SPP=="POTR"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "POTR"],
+  loc$HEIGHT_M[loc$SPP=="POTR"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = height$AV[height$SPP == "POTR"],
                                        sd = height$SD[height$SPP == "POTR"])
-  loc$HEIGHT_M[loc$SPP=="PIME"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "PIME"],
+  loc$HEIGHT_M[loc$SPP=="PIME"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = height$AV[height$SPP == "PIME"],
                                        sd = height$SD[height$SPP == "PIME"])
-  loc$HEIGHT_M[loc$SPP=="ALCR"] <- rtruncnorm(round(mean(meantree1$n)), a =0, mean = height$AV[height$SPP == "ALCR"],
+  loc$HEIGHT_M[loc$SPP=="ALCR"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a =0, mean = height$AV[height$SPP == "ALCR"],
                                        sd = height$SD[height$SPP == "ALCR"])
   # loc$HEIGHT_M[loc$SPP=="ARCTO"] <- rtruncnorm(round(mean(meantree1$n)), a = 0,mean = height$AV[height$SPP == "ARCTO"],
                                 #       sd = height$SD[height$SPP == "ARCTO"])
-  loc$HEIGHT_M[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "SALIX"],
+  loc$HEIGHT_M[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = height$AV[height$SPP == "SALIX"],
                                        sd = height$SD[height$SPP == "SALIX"])
   loc$HEIGHT_M <- round(loc$HEIGHT_M, digits = 2)
   hist(loc$HEIGHT_M)
@@ -148,17 +147,17 @@ unique(dbh$EXP_FACT)
     group_by(SPP) %>%
     summarise(AV = mean(STEM_BIOMASS), SD = sd(STEM_BIOMASS)) 
   
-  loc$STEM_BIOMASS[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n)),a = 0, mean = biomass_stem$AV[height$SPP == "BENE"],
+  loc$STEM_BIOMASS[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n_landscape)),a = 0, mean = biomass_stem$AV[height$SPP == "BENE"],
                                             sd = biomass_stem$SD[height$SPP == "BENE"])
-  loc$STEM_BIOMASS[loc$SPP=="POTR"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = biomass_stem$AV[biomass_stem$SPP == "POTR"],
+  loc$STEM_BIOMASS[loc$SPP=="POTR"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_stem$AV[biomass_stem$SPP == "POTR"],
                                             sd = biomass_stem$SD[biomass_stem$SPP == "POTR"])
-  loc$STEM_BIOMASS[loc$SPP=="PIME"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = biomass_stem$AV[biomass_stem$SPP == "PIME"],
+  loc$STEM_BIOMASS[loc$SPP=="PIME"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_stem$AV[biomass_stem$SPP == "PIME"],
                                             sd = biomass_stem$SD[biomass_stem$SPP == "PIME"])
-  loc$STEM_BIOMASS[loc$SPP=="ALCR"] <- rtruncnorm(round(mean(meantree1$n)), a =0, mean = biomass_stem$AV[biomass_stem$SPP == "ALCR"],
+  loc$STEM_BIOMASS[loc$SPP=="ALCR"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a =0, mean = biomass_stem$AV[biomass_stem$SPP == "ALCR"],
                                             sd = biomass_stem$SD[biomass_stem$SPP == "ALCR"])
   #loc$STEM_BIOMASS[loc$SPP=="ARCTO"] <- rtruncnorm(round(mean(meantree1$n)), a = 0,mean = biomass_stem$AV[biomass_stem$SPP == "ARCTO"],
                                             # sd = biomass_stem$SD[biomass_stem$SPP == "ARCTO"])
-  loc$STEM_BIOMASS[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = biomass_stem$AV[biomass_stem$SPP == "SALIX"],
+  loc$STEM_BIOMASS[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_stem$AV[biomass_stem$SPP == "SALIX"],
                                              sd = biomass_stem$SD[biomass_stem$SPP == "SALIX"])
   ### Foliage ####################
   dbh$FOL_BIOMASS <- 0
@@ -173,17 +172,17 @@ unique(dbh$EXP_FACT)
     group_by(SPP) %>%
     summarise(AV = mean(FOL_BIOMASS), SD = sd(FOL_BIOMASS)) 
   
-  loc$FOL_BIOMASS[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n)),a = 0, mean = biomass_fol$AV[height$SPP == "BENE"],
+  loc$FOL_BIOMASS[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n_landscape)),a = 0, mean = biomass_fol$AV[height$SPP == "BENE"],
                                                   sd = biomass_fol$SD[height$SPP == "BENE"])
-  loc$FOL_BIOMASS[loc$SPP=="POTR"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "POTR"],
+  loc$FOL_BIOMASS[loc$SPP=="POTR"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "POTR"],
                                                   sd = biomass_fol$SD[biomass_fol$SPP == "POTR"])
-  loc$FOL_BIOMASS[loc$SPP=="PIME"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "PIME"],
+  loc$FOL_BIOMASS[loc$SPP=="PIME"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "PIME"],
                                                   sd = biomass_fol$SD[biomass_fol$SPP == "PIME"])
-  loc$FOL_BIOMASS[loc$SPP=="ALCR"] <- rtruncnorm(round(mean(meantree1$n)), a =0, mean = biomass_fol$AV[biomass_fol$SPP == "ALCR"],
+  loc$FOL_BIOMASS[loc$SPP=="ALCR"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a =0, mean = biomass_fol$AV[biomass_fol$SPP == "ALCR"],
                                                   sd = biomass_fol$SD[biomass_fol$SPP == "ALCR"])
   #loc$FOL_BIOMASS[loc$SPP=="ARCTO"] <- rtruncnorm(round(mean(meantree1$n)), a = 0,mean = biomass_fol$AV[biomass_fol$SPP == "ARCTO"],
   # sd = biomass_fol$SD[biomass_fol$SPP == "ARCTO"])
-  loc$FOL_BIOMASS[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "SALIX"],
+  loc$FOL_BIOMASS[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "SALIX"],
                                                    sd = biomass_fol$SD[biomass_fol$SPP == "SALIX"])
 
   # setting dead trees to have foliar biomass = 0
