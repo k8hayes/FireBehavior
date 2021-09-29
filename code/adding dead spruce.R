@@ -29,6 +29,35 @@ herb2019$QUAD[herb2019$PLOT == "20_1"] <- 2
 herb2019$EXP_FACT[herb2019$PLOT == "41_1"] <- 100
 herb2019$EXP_FACT[herb2019$PLOT == "20_1"] <- 100
 
+# need to duplicate counts in certain plots to scale up to 2 quadrants
+
+    plot42_1 <- herb2019[herb2019$PLOT == "42_1",]
+    plot29_1 <- herb2019[herb2019$PLOT == "29_1",]
+    plot36_1 <- herb2019[herb2019$PLOT == "36_1",]
+    plot5_1 <- herb2019[herb2019$PLOT == "5_1",]
+    plot52_1 <- herb2019[herb2019$PLOT == "52_1",]
+    plot64_1 <- herb2019[herb2019$PLOT == "64_1",]
+    plot65_1 <- herb2019[herb2019$PLOT == "65_1",]
+    
+    nrow(herb2019[herb2019$PLOT == "42_1",]) # test
+    
+    herb2019 <- rbind(herb2019, plot42_1, plot29_1, plot36_1, plot5_1, plot52_1,
+                      plot64_1, plot65_1)
+    
+    nrow(herb2019[herb2019$PLOT == "42_1",]) # test
+    
+    herb2019$QUAD[herb2019$PLOT == "42_1"] <- 2
+    herb2019$QUAD[herb2019$PLOT == "29_1"] <- 2
+    herb2019$QUAD[herb2019$PLOT == "36_1"] <- 2
+    herb2019$QUAD[herb2019$PLOT == "5_1"] <- 2
+    herb2019$QUAD[herb2019$PLOT == "52_1"] <- 2
+    herb2019$QUAD[herb2019$PLOT == "64_1"] <- 2
+    herb2019$QUAD[herb2019$PLOT == "65_1"] <- 2
+    
+    rm(plot42_1, plot29_1, plot36_1, plot5_1, plot52_1,
+       plot64_1, plot65_1)
+
+
 # 2018 data ######################################
 
 dbh2018 <- read.csv(here("data/dbh2018.csv"))
@@ -52,6 +81,15 @@ add2018 <- pime2018dead %>%
   select(!c(UND, BROWSE, START_END))
 
 add2018$CLUMP_ID <- NA
+
+# scaling 50_1 up to 1 quadrant
+  plot50_1 <- add2018[add2018$PLOT == "50_1",]
+  
+  add2018 <- rbind(add2018, plot50_1[rep(1,4),])
+  
+  add2018$QUAD[add2018$PLOT == "50_1"] <- 1
+  
+  rm(plot50_1)
 
 ## height dbh equation ##############################
 
@@ -88,6 +126,9 @@ colnames(herb2019)
 
 # Combining ############################################3
 test <- rbind(herb2019, add2018)
+
+test$EXP_FACT[test$QUAD == "1"] <- 4000
+test$EXP_FACT[test$QUAD == "2"] <- 2000
 
 write.csv(test, here("data/dbh_clumpsas1.csv"), row.names = FALSE)
 
