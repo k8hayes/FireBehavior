@@ -20,8 +20,14 @@ herb2019[3200,]
 unique(pime2019$PLOT) # checking plots
 
 # adding quadrant / exp_fact into herb2019 data
-herb2019$QUAD <- 2
-herb2019$EXP_FACT <- 50
+herb2019$QUAD <- 1
+herb2019$EXP_FACT <- 100
+
+herb2019$QUAD[herb2019$PLOT == "41_1"] <- 2
+herb2019$QUAD[herb2019$PLOT == "20_1"] <- 2
+
+herb2019$EXP_FACT[herb2019$PLOT == "41_1"] <- 100
+herb2019$EXP_FACT[herb2019$PLOT == "20_1"] <- 100
 
 # 2018 data ######################################
 
