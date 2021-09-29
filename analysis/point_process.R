@@ -12,6 +12,9 @@ dbh <- read.csv(here("data/dbh_clumpsas1.csv"))
 dbh <- dbh %>%
   filter(SPP != "ARCTO")
 
+# Scaling ########################
+unique(dbh$EXP_FACT)
+
 # Points #########################
   # mean number of trees per plot
     meantree1 <- dbh %>%
@@ -19,10 +22,13 @@ dbh <- dbh %>%
       group_by(PLOT) %>%
       summarise(n = n())
     round(mean(meantree1$n)) # 175
+    
+    # scale up to 1000 * 400
+    
 
   # generating point cloud  
-  x <- round(runif(round(mean(meantree1$n)), 0, 20))
-  y <- round(runif(round(mean(meantree1$n)), 0, 20))
+  x <- round(runif(round(mean(meantree1$n)), 0, 1000))
+  y <- round(runif(round(mean(meantree1$n)), 0, 400))
 
   plot(x,y)
 
@@ -111,22 +117,22 @@ dbh <- dbh %>%
       
   ### Assigning heights ################
       # initializing column
-        loc$HEIGHT <- 0
+        loc$HEIGHT_M <- 0
       
-  loc$HEIGHT[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "BENE"],
+  loc$HEIGHT_M[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "BENE"],
                                                   sd = height$SD[height$SPP == "BENE"])
-  loc$HEIGHT[loc$SPP=="POTR"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "POTR"],
+  loc$HEIGHT_M[loc$SPP=="POTR"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "POTR"],
                                        sd = height$SD[height$SPP == "POTR"])
-  loc$HEIGHT[loc$SPP=="PIME"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "PIME"],
+  loc$HEIGHT_M[loc$SPP=="PIME"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "PIME"],
                                        sd = height$SD[height$SPP == "PIME"])
-  loc$HEIGHT[loc$SPP=="ALCR"] <- rtruncnorm(round(mean(meantree1$n)), a =0, mean = height$AV[height$SPP == "ALCR"],
+  loc$HEIGHT_M[loc$SPP=="ALCR"] <- rtruncnorm(round(mean(meantree1$n)), a =0, mean = height$AV[height$SPP == "ALCR"],
                                        sd = height$SD[height$SPP == "ALCR"])
-  # loc$HEIGHT[loc$SPP=="ARCTO"] <- rtruncnorm(round(mean(meantree1$n)), a = 0,mean = height$AV[height$SPP == "ARCTO"],
+  # loc$HEIGHT_M[loc$SPP=="ARCTO"] <- rtruncnorm(round(mean(meantree1$n)), a = 0,mean = height$AV[height$SPP == "ARCTO"],
                                 #       sd = height$SD[height$SPP == "ARCTO"])
-  loc$HEIGHT[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "SALIX"],
+  loc$HEIGHT_M[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n)), a = 0, mean = height$AV[height$SPP == "SALIX"],
                                        sd = height$SD[height$SPP == "SALIX"])
-  loc$HEIGHT <- round(loc$HEIGHT, digits = 2)
-  hist(loc$HEIGHT)
+  loc$HEIGHT_M <- round(loc$HEIGHT_M, digits = 2)
+  hist(loc$HEIGHT_M)
 
 ## Biomass #########################
   ### Stem ###############################
@@ -182,4 +188,9 @@ dbh <- dbh %>%
 
   # setting dead trees to have foliar biomass = 0
   loc$FOL_BIOMASS[loc$LIVE_DEAD ==0] <- 0
-   
+  
+  
+  ## Crown Width #####################################
+  
+  loc$CROWN_WIDTH <- 2*(sqrt(loc$STEM_BIOMASS + loc$FOL_BIOMASS / pi * loc$HEIGHT))
+  
