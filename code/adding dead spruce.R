@@ -19,6 +19,7 @@ herb2019[3200,]
 
 unique(pime2019$PLOT) # checking plots
 
+## Scaling #############################
 # adding quadrant / exp_fact into herb2019 data
 herb2019$QUAD <- 1
 herb2019$EXP_FACT <- 100
@@ -39,12 +40,12 @@ herb2019$EXP_FACT[herb2019$PLOT == "20_1"] <- 100
     plot64_1 <- herb2019[herb2019$PLOT == "64_1",]
     plot65_1 <- herb2019[herb2019$PLOT == "65_1",]
     
-    nrow(herb2019[herb2019$PLOT == "42_1",]) # test
+    nrow(herb2019[herb2019$PLOT == "42_1",]) # test # 38
     
     herb2019 <- rbind(herb2019, plot42_1, plot29_1, plot36_1, plot5_1, plot52_1,
                       plot64_1, plot65_1)
     
-    nrow(herb2019[herb2019$PLOT == "42_1",]) # test
+    nrow(herb2019[herb2019$PLOT == "42_1",]) # test # 76
     
     herb2019$QUAD[herb2019$PLOT == "42_1"] <- 2
     herb2019$QUAD[herb2019$PLOT == "29_1"] <- 2
@@ -82,6 +83,7 @@ add2018 <- pime2018dead %>%
 
 add2018$CLUMP_ID <- NA
 
+## scaling ############################
 # scaling 50_1 up to 1 quadrant
   plot50_1 <- add2018[add2018$PLOT == "50_1",]
   
@@ -99,8 +101,8 @@ test <- ss_modelselect_multi(pime2019,
                              predictor = "DBH_CM")
 test
 
-data(eqns_info, package = "allometree") # equation forms
-eqns_info
+# data(eqns_info, package = "allometree") # equation forms
+# eqns_info
 
 testpred <- ss_simulate(ref_table = test$ss_models_info,
                          models = test$ss_models,
@@ -127,8 +129,11 @@ colnames(herb2019)
 # Combining ############################################3
 test <- rbind(herb2019, add2018)
 
+rm(herb2019, add2018)
+
 test$EXP_FACT[test$QUAD == "1"] <- 4000
 test$EXP_FACT[test$QUAD == "2"] <- 2000
 
-write.csv(test, here("data/dbh_clumpsas1.csv"), row.names = FALSE)
+write.csv(test, here("data/dbh_clumpsas1_scale.csv"), row.names = FALSE)
 
+rm(test, testpred)
