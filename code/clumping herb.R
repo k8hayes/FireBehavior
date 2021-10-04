@@ -5,6 +5,8 @@ library(here)
 
 dbh <- read.csv(here("data/herb_clump_biomass.csv"))
 
+dbh <- read.csv(here("data/dbh_unclump.csv"))
+
 # Data checks ##################################
   # Gave each clump an individual clump ID 
   # 1030 total
@@ -37,6 +39,7 @@ dbh <- read.csv(here("data/herb_clump_biomass.csv"))
       tail(unique(clump$CLUMP_ID))
       
 
+      rm(start, end)
   # checking if any clump ID is only present once
       n <- clump %>%
       group_by(CLUMP_ID) %>%
@@ -45,6 +48,8 @@ dbh <- read.csv(here("data/herb_clump_biomass.csv"))
       n <- as.data.frame(n)
     
       n[n$`n()` == 1,]
+      
+      rm(n)
 
 # Grouping by clump ID ############################
 
@@ -66,6 +71,9 @@ dbh <- read.csv(here("data/herb_clump_biomass.csv"))
 
 dbh_clumpsas1 <- rbind(clumpind, ind)
 
-# Export ############################################
-write.csv(dbh_clumpsas1, here("data/dbh_clumpsas1.csv"), row.names = FALSE)
+rm(ind, clumpind)
 
+# Export ############################################
+write.csv(dbh_clumpsas1, here("data/dbh_clumpsas1_scale.csv"), row.names = FALSE)
+
+rm(dbh_clumpsas1)
