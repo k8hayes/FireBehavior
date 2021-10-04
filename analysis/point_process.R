@@ -6,7 +6,7 @@ library(truncnorm)
 library(here)
 library(randomizr) # https://cran.r-project.org/web/packages/randomizr/vignettes/randomizr_vignette.html
 
-dbh <- read.csv(here("data/dbh_clumpsas1.csv"))
+dbh <- read.csv(here("data/dbh_clumpsas1_scale.csv"))
 
 # taking ARCTO out for now
 dbh <- dbh %>%
@@ -18,12 +18,12 @@ dbh <- dbh %>%
       filter(TREAT == 1) %>%
       group_by(PLOT) %>%
       summarise(n = n(), QUAD = unique(QUAD), EXP_FACT = unique(EXP_FACT))
-    round(mean(meantree1$n)) # 399
+    round(mean(meantree1$n)) # 214
     
     # scale up to 1000 * 400
     meantree1$n_landscape <- meantree1$n * meantree1$EXP_FACT
     
-    round(mean(meantree1$n_landscape)) # 1031467
+    round(mean(meantree1$n_landscape)) # 605600
     
   # generating point cloud  
   x <- round(runif(round(mean(meantree1$n_landscape)), 0, 1000))
@@ -99,6 +99,8 @@ dbh <- dbh %>%
                                   # conditions = c(1,0))
   loc <- rbind(pime_loc, bene_loc, potr_loc, salix_loc, alcr_loc)
   
+    rm(pime_loc, bene_loc, potr_loc, salix_loc, alcr_loc)
+  
   ## Height ##################################   
    # what's the average height per species within 1x burns
     height <- dbh %>% 
@@ -132,6 +134,7 @@ dbh <- dbh %>%
                                        sd = height$SD[height$SPP == "SALIX"])
   loc$HEIGHT_M <- round(loc$HEIGHT_M, digits = 2)
   hist(loc$HEIGHT_M)
+ 
 
 ## Biomass #########################
   ### Stem ###############################
@@ -192,4 +195,5 @@ dbh <- dbh %>%
   ## Crown Width #####################################
   
   loc$CROWN_WIDTH <- 2*(sqrt(loc$STEM_BIOMASS + loc$FOL_BIOMASS / pi * loc$HEIGHT))
-  
+
+    
