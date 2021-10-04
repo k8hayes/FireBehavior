@@ -99,7 +99,8 @@ dbh <- dbh %>%
                                   # conditions = c(1,0))
   loc <- rbind(pime_loc, bene_loc, potr_loc, salix_loc, alcr_loc)
   
-    rm(pime_loc, bene_loc, potr_loc, salix_loc, alcr_loc)
+    rm(pime_loc, bene_loc, potr_loc, salix_loc, alcr_loc,
+       meanCan1)
   
   ## Height ##################################   
    # what's the average height per species within 1x burns
@@ -135,6 +136,7 @@ dbh <- dbh %>%
   loc$HEIGHT_M <- round(loc$HEIGHT_M, digits = 2)
   hist(loc$HEIGHT_M)
  
+    rm(height)
 
 ## Biomass #########################
   ### Stem ###############################
@@ -188,10 +190,11 @@ dbh <- dbh %>%
   loc$FOL_BIOMASS[loc$SPP=="SALIX"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "SALIX"],
                                                    sd = biomass_fol$SD[biomass_fol$SPP == "SALIX"])
 
+  rm(biomass_fol, biomass_stem)  
   # setting dead trees to have foliar biomass = 0
   loc$FOL_BIOMASS[loc$LIVE_DEAD ==0] <- 0
   
-  
+
   ## Crown Width #####################################
   
   loc$CROWN_WIDTH <- 2*(sqrt(loc$STEM_BIOMASS + loc$FOL_BIOMASS / pi * loc$HEIGHT))
