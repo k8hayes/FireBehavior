@@ -199,4 +199,37 @@ dbh <- dbh %>%
   
   loc$CROWN_WIDTH <- 2*(sqrt(loc$STEM_BIOMASS + loc$FOL_BIOMASS / pi * loc$HEIGHT))
 
-    
+# Exporting ##############################################
+  
+  #Assume that our 'area of interest' for collecting fire behavior data is in a subset of the 1000 m x 400 m domain
+  # AOI: x{600,800}, y{100,300}
+  # Each tree will also need a unique identifier
+  trees <- mutate(loc,
+                 export = if_else((x >= 600 & x <= 800 & y >= 100 & y<=300), TRUE, FALSE)) %>%
+    group_by(export) %>%
+    mutate(id =  row_number())
+  
+  length(which(trees$export == "TRUE")) # can do 4096 total
+  
+  ggplot(trees, aes(x,y,col=export)) + geom_point() + coord_equal()
+  
+  #Make tree list ready for WFDS
+  trees = mutate(trees,
+                 wfds_canopy =
+                   paste0("&TREE XYZ=", round(x,1), ",", round(y,1),
+                          ",0,PART_ID='TREE',FUEL_GEOM='CYLINDER',CROWN_WIDTH=", round(cw,1),
+                          ",CROWN_BASE_HEIGHT=", round(cbh,1),
+                          ",TREE_HEIGHT=", round(ht,1),
+                          ",OUTPUT_TREE=.", export,
+                          ".,LABEL='", paste0('tree',id), "' /"),
+                 wfds_stem =
+                   paste0("&TREE XYZ=",round(x,1), ",", round(y,1),
+                          ",0,PART_ID='TRUNK',FUEL_GEOM='CYLINDER',CROWN_WIDTH=",round(dbh/100,1),
+                          ",CROWN_BASE_HEIGHT=0",
+                          ",TREE_HEIGHT=",cbh,"/"
+                   )
+  )
+  
+  #Note that all trees get labelled but only those trees in the area of interest (where export == TRUE)
+  # will actually have their heating and mass tracked
+  #Also, length units are in meters so dbh, commonly measured in cm, are expressed in m.
