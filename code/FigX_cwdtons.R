@@ -6,11 +6,32 @@ theme_set(theme_cowplot())
 library(tidyverse)
 library(here)
 
-cwd <- read.csv(here("data/cwd_tons.h.csv"))
+cwd <- read.csv(here("data/cwd/cwd_tons.h.csv"))
 
 head(cwd)
 
 # testing interval
+
+
+cwd_long <- cwd %>%
+  pivot_longer(cols = starts_with("X"),
+               names_to = "Fuel_Type",
+               values_to = "Tons.H")
+
+
+cwd_long$group <- NA
+cwd_long$group[cwd_long$Fuel_Type == "X1HR_TONS.H"] <- "Fine"
+cwd_long$group[cwd_long$Fuel_Type == "X10HR_TONS.H"] <- "Fine"
+cwd_long$group[cwd_long$Fuel_Type == "X100HR_TONS.H"] <- "Medium"
+cwd_long$group[cwd_long$Fuel_Type == "X1000HR_TONS.H"] <- "Large"
+
+ggplot(cwd_long, aes(x = as.factor(TREAT), y = Tons.H, fill = group)) + 
+  geom_boxplot() + 
+  scale_fill_manual(name = "Fuel Size",
+                    values = c("#ffeda0","#feb24c","#f03b20"),
+                    labels = c("Fine", "Medium", "Large")) + 
+  labs(x = "Number of Fires", y = "Fuel Abundance (tons/ha)", 
+       title = "Fuel Abundance across reburn history")
 
 one_plot <- ggplot(cwd, aes(x = Interval, y = X1HR_TONS.H, col = SITE))  + geom_jitter(width = 4) +
   labs(x = "Years since initial fire", y = "Tons/Ha", title = "1-Hour Fuels") + 
