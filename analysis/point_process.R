@@ -53,14 +53,22 @@ dbh <- dbh %>%
               conditions = meantreespp1$SPP) # names
  
  ### Live / Dead #############################
-   meanCan1 <- dbh %>% 
+   can_test <- dbh
+   can_test$LIVE_DEAD <- NA
+   can_test$LIVE_DEAD[can_test$CANOPY > 0] <- "LIVE"
+   can_test$LIVE_DEAD[can_test$CANOPY == 0] <- "DEAD"
+   
+   meanCan1 <- can_test %>% 
      filter(TREAT == 1) %>% # only 1x burns right now
-     filter(CANOPY > 0 ) %>%
-     group_by(PLOT, SPP) %>% # group by plot / spp
+     group_by(PLOT, SPP, LIVE_DEAD, .drop = FALSE) %>% # group by plot / spp
      summarise(n = n()) %>% # counts number of spp within plot
-     group_by(SPP) %>% # groups by spp only
-     summarise(AV = round(mean(n))) 
-   meanCan1$prob <- round(meanCan1$AV / sum(meanCan1$AV), digits = 2)
+     complete(expand(can_test, LIVE_DEAD), fill = list(n = 0 )) %>%
+     filter(LIVE_DEAD != "NA") %>%
+     pivot_wider(names_from = LIVE_DEAD, values_from = n)
+    
+   meanCan1$tot <- meanCan1$LIVE + meanCan1$DEAD
+  
+   meanCan1$prob <- round(meanCan1$LIVE / meanCan1$tot, digits = 2)
    
   pime_loc <- loc %>% 
     filter(SPP == "PIME") 
@@ -153,8 +161,8 @@ dbh <- dbh %>%
     group_by(SPP) %>%
     summarise(AV = mean(STEM_BIOMASS), SD = sd(STEM_BIOMASS)) 
   
-  loc$STEM_BIOMASS[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n_landscape)),a = 0, mean = biomass_stem$AV[height$SPP == "BENE"],
-                                            sd = biomass_stem$SD[height$SPP == "BENE"])
+  loc$STEM_BIOMASS[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n_landscape)),a = 0, mean = biomass_stem$AV[biomass_stem$SPP == "BENE"],
+                                            sd = biomass_stem$SD[biomass_stem$SPP == "BENE"])
   loc$STEM_BIOMASS[loc$SPP=="POTR"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_stem$AV[biomass_stem$SPP == "POTR"],
                                             sd = biomass_stem$SD[biomass_stem$SPP == "POTR"])
   loc$STEM_BIOMASS[loc$SPP=="PIME"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_stem$AV[biomass_stem$SPP == "PIME"],
@@ -178,8 +186,8 @@ dbh <- dbh %>%
     group_by(SPP) %>%
     summarise(AV = mean(FOL_BIOMASS), SD = sd(FOL_BIOMASS)) 
   
-  loc$FOL_BIOMASS[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n_landscape)),a = 0, mean = biomass_fol$AV[height$SPP == "BENE"],
-                                                  sd = biomass_fol$SD[height$SPP == "BENE"])
+  loc$FOL_BIOMASS[loc$SPP=="BENE"] <- rtruncnorm(round(mean(meantree1$n_landscape)),a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "BENE"],
+                                                  sd = biomass_fol$SD[biomass_fol$SPP == "BENE"])
   loc$FOL_BIOMASS[loc$SPP=="POTR"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "POTR"],
                                                   sd = biomass_fol$SD[biomass_fol$SPP == "POTR"])
   loc$FOL_BIOMASS[loc$SPP=="PIME"] <- rtruncnorm(round(mean(meantree1$n_landscape)), a = 0, mean = biomass_fol$AV[biomass_fol$SPP == "PIME"],
@@ -200,7 +208,13 @@ dbh <- dbh %>%
   
   loc$CROWN_WIDTH <- 2*(sqrt(loc$STEM_BIOMASS + loc$FOL_BIOMASS / pi * loc$HEIGHT))
 
-## Exporting ##############################################
+  
+
+  tree_input <- loc[sample(nrow(loc), 100),]
+  
+  write.csv(tree_input, here("data/output/tree_input100.csv"), row.names = F)
+  
+  ## Exporting ##############################################
   
   #Assume that our 'area of interest' for collecting fire behavior data is in a subset of the 1000 m x 400 m domain
   # AOI: x{600,800}, y{100,300}
