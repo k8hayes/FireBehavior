@@ -1,9 +1,8 @@
 # playing with CWD in tons/ha
 
-library(ggplot2)
+library(tidyverse)
 library(cowplot)
 theme_set(theme_cowplot())
-library(tidyverse)
 library(here)
 
 cwd <- read.csv(here("data/cwd/cwd_tons.h.csv"))
@@ -32,6 +31,17 @@ ggplot(cwd_long, aes(x = as.factor(TREAT), y = Tons.H, fill = group)) +
                     labels = c("Fine", "Medium", "Large")) + 
   labs(x = "Number of Fires", y = "Fuel Abundance (tons/ha)", 
        title = "Fuel Abundance across reburn history")
+
+cwd_long %>%
+  filter(TREAT != 0) %>%
+  ggplot(aes(x = as.factor(TREAT), y = Tons.H, fill = Fuel_Type)) + 
+  geom_boxplot() + panel_border() + 
+  scale_fill_manual(name = "Fuel Size Class",
+                    values = c("#ffeda0","#feb24c","#fd8d3c", "#e31a1c"),
+                    labels = c("1-Hour", "10-Hour", "100-Hour", "1000-Hour")) + 
+  labs(x = "Number of Fires", y = "Fuel Abundance (tons/ha)", 
+       title = "Fuel Abundance across reburn history")
+
 
 one_plot <- ggplot(cwd, aes(x = Interval, y = X1HR_TONS.H, col = SITE))  + geom_jitter(width = 4) +
   labs(x = "Years since initial fire", y = "Tons/Ha", title = "1-Hour Fuels") + 
