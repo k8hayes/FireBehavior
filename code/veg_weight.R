@@ -6,7 +6,6 @@ library(cowplot)
 theme_set(theme_cowplot())
 library(here)
 
-
 veg_weight <- read.csv(here("data/understory_veg_weight_raw.csv"))
 
 veg_weight$DIFF <-  veg_weight$WET_WEIGHT - veg_weight$DRY_WEIGHT / veg_weight$WET_WEIGHT
@@ -21,6 +20,10 @@ veg_weight %>%
   group_by(TREAT) %>%
   summarise(AV = mean(moist), SD = sd(moist))
 
+veg_weight %>%
+  group_by(TREAT) %>%
+  filter(TREAT == 1 | TREAT == 3) %>%
+  summarise(quantile(DRY_WEIGHT, probs = c(0.25)))
 
 # Plots ##########################################3
 ggplot(veg_weight, aes(y = DIFF, x = as.factor(TREAT), fill = SITE)) + geom_boxplot() + 
