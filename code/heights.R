@@ -9,6 +9,8 @@ height <- read.csv(here("data/heights.csv"))
 
 colnames(height)
 
+height$CANOPY <- as.numeric(height$CANOPY)
+
 ggplot(height, aes(x = as.factor(TREAT), y = HEIGHT_M, fill = SITE)) + 
   geom_boxplot() + labs(x = "Number of Fires", y = "Height (m)", title = "Indiv. Height Distributions")
 
@@ -16,14 +18,17 @@ site_names <- c('DALTON' = "Upland",
                 'STEESE' = "Lowland") # comes from https://stackoverflow.com/questions/3472980/how-to-change-facet-labels
 
 height %>%
-  filter(TREAT >0 ) %>%
+  filter(SPP != "ARCTO") %>%
+  filter(SPP != "PIGL") %>%
+  filter(SPP != "POBA") %>%
+  filter(CANOPY > 0) %>%
   ggplot(aes(x = as.factor(TREAT), y = HEIGHT_M, fill = SPP)) + 
-  geom_boxplot() + facet_wrap( ~ SITE, labeller = as_labeller(site_names) ) + 
+  geom_boxplot() + ylim(0,10) + facet_wrap(~SITE, labeller = as_labeller(site_names)) + 
   labs(x = "Number of Fires", y = "Height (m)", 
        title = "Species Height Distributions") + 
-  scale_fill_manual(values = c("#8c510a", "#bf812d", "#dfc27d", "#f6e8c3",
-                               "#c7eae5", "#80cdc1", "#35978f", "#01665e"),
+  scale_fill_manual(values = c("#8c510a",  "#dfc27d",
+                               "#c7eae5", "#35978f", "#01665e"),
                     name = "Species",
-                    labels = c("Alder", "Dwarf Birch", "Birch",
-                               "White Spruce", "Black Spruce", "Poplar",
+                    labels = c("Alder",  "Birch",
+                                "Black Spruce",
                               "Aspen", "Willow"))
