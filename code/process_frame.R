@@ -118,8 +118,14 @@ frame_tot <- frame_count %>%
   group_by(Site, Fires, Plot) %>%
   summarise(bare = sum(bare))
 
+frame_count %>%
+  filter(Site == "Dalton")
+
 frame_tot$tot <- frame_tot$bare / 10
 
 frame_tot %>%
   group_by(Fires) %>%
   summarise(AV = mean(tot), SD = sd(tot))
+
+frame_tot %>%
+  filter(Site == "Dalton")
