@@ -8,12 +8,14 @@ library(here)
 fine <- read.csv(here("data/FF heights/FFL_raw.csv"))
 
 # plots ######################################
+  
 ggplot(fine, aes(x = as.factor(TREAT), y = HEIGHT, fill = SITE)) + 
   geom_boxplot() + 
   labs(x = "Number of Fires", y = "Height (cm)", title = "Fine Fuel Heights") + 
   scale_fill_manual(values = c("#d8b365", "#5ab4ac"),
                     labels = c("Upland", "Lowland"),
-                    name = "Site")
+                    name = "Site") + 
+  ylim(0, 250)
 
 fine_plot <- fine %>%
   group_by(SITE, TREAT, PLOT, LINE) %>%
