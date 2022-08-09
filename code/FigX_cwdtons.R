@@ -24,11 +24,12 @@ cwd_long$group[cwd_long$Fuel_Type == "X10HR_TONS.H"] <- "Fine"
 cwd_long$group[cwd_long$Fuel_Type == "X100HR_TONS.H"] <- "Medium"
 cwd_long$group[cwd_long$Fuel_Type == "X1000HR_TONS.H"] <- "Large"
 
-ggplot(cwd_long, aes(x = as.factor(TREAT), y = Tons.H, fill = group)) + 
+# used this one for JFSP final report
+ggplot(cwd_long, aes(x = as.factor(TREAT), y = Tons.H, fill = Fuel_Type)) + 
   geom_boxplot() + 
-  scale_fill_manual(name = "Fuel Size",
-                    values = c("#ffeda0","#feb24c","#f03b20"),
-                    labels = c("Fine", "Medium", "Large")) + 
+  scale_fill_manual(name = "Fuel Size Class",
+                    values = c("#ffffb2", "#fecc5c","#fd8d3c","#e31a1c"),
+                    labels = c("1-Hour", "10-Hour", "100-Hour", "1000-Hour")) + 
   labs(x = "Number of Fires", y = "Fuel Abundance (tons/ha)", 
        title = "Fuel Abundance across reburn history")
 
@@ -39,6 +40,14 @@ cwd_long %>%
   scale_fill_manual(name = "Fuel Size Class",
                     values = c("#ffeda0","#feb24c","#fd8d3c", "#e31a1c"),
                     labels = c("1-Hour", "10-Hour", "100-Hour", "1000-Hour")) + 
+  labs(x = "Number of Fires", y = "Fuel Abundance (tons/ha)", 
+       title = "Fuel Abundance across reburn history")
+
+ggplot(cwd_long, aes(x = as.factor(TREAT), y = Tons.H, fill = group)) + 
+  geom_boxplot() + facet_wrap(~SITE) + 
+  scale_fill_manual(name = "Fuel Size",
+                    values = c("#ffeda0","#feb24c","#f03b20"),
+                    labels = c("Fine", "Medium", "Large")) + 
   labs(x = "Number of Fires", y = "Fuel Abundance (tons/ha)", 
        title = "Fuel Abundance across reburn history")
 
