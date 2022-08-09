@@ -62,20 +62,31 @@ theme_set(theme_cowplot())
   data <- read.csv(here("data/distances/Spp_dist_2021.csv"))
   
 # Results ###############
+
+data <- data.frame(lapply(data, function(x) {
+  gsub("DALTON", "Upland", x)
+}))
   
+data <- data.frame(lapply(data, function(x) {
+  gsub("STEESE", "Lowland", x)
+}))
+
+data$DIST_M <- as.numeric(data$DIST_M)
+
   # graphing all species distances
   data %>%
     filter(SPP != "UNK") %>%
     filter(DIST_M != "NA") %>%
+    filter(SPP != "ARCTO") %>%
     ggplot(aes(x = as.factor(TREAT), y = DIST_M, fill = SPP)) + 
     geom_boxplot() + facet_wrap(~SITE) + 
     labs(x = "Number of Fires", 
                           y = "Distance (meters)",
                           title = "Distance between Species") + 
     scale_fill_manual(name = "Species",
-                      labels = c("Alder", "Dwarf Birch", "Birch", "Spruce", "Aspen",
+                      labels = c("Alder",  "Birch", "Spruce", "Aspen",
                                  "Willow"),
-                      values = c("#a6cee3","#1f78b4","#b2df8a",
+                      values = c("#a6cee3","#b2df8a",
                                  "#33a02c","#fb9a99","#e31a1c"))
   # Plotting according to Plot
   plot <- data %>%
@@ -131,4 +142,15 @@ theme_set(theme_cowplot())
     geom_boxplot() + 
     labs(x = "Number of Fires")
   
+  
+# Averages #####################################
+ avs <-  data %>%
+    filter(SPP != "UNK") %>%
+    group_by(SITE, TREAT, SPP) %>%
+    summarise(mean(DIST_M))
+  
+  avs <-  data %>%
+    filter(SPP != "UNK") %>%
+    group_by(SITE, TREAT) %>%
+    summarise(mean(DIST_M))
   
