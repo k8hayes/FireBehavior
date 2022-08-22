@@ -23,6 +23,8 @@ dens$EXP_FACT[dens$PLOT == "12_1"] <- 40
 dens$EXP_FACT[dens$PLOT == "50_1"] <- 40
 dens$EXP_FACT[dens$PLOT == "34_2"] <- 200
 
+# plot ###########################################
+
 dens_plot <- dens %>%
   filter(CANOPY > 0) %>%
   group_by(SITE, TREAT, PLOT, SPP) %>%
@@ -47,7 +49,28 @@ scale_fill_manual(values = c("#8c510a",  "#dfc27d",
                              "Aspen", "Willow")) + 
   facet_wrap(~SITE)
 
+# division ###########################################
+
+dens_div <- dens %>%
+  filter(CANOPY > 0) %>%
+  group_by(SITE, TREAT, PLOT, DIV ) %>%
+  summarise(COUNT_PLOT = n(), EXP_FACT = min(EXP_FACT))
+
+dens_div$COUNT_M <- dens_div$COUNT_PLOT / dens_div$EXP_FACT
+
+dens_div %>%
+  ggplot(aes(x = as.factor(TREAT), y = COUNT_M, fill = DIV)) + 
+  geom_boxplot()  + ylim(0,1) + 
+  labs(x = "Number of Fires", y = "Density (stems/m)", 
+       title = "Tree Density across Reburns") + 
+  scale_fill_manual(values = c("#99d8c9",  "#dfc27d"),
+                    name = " ",
+                    labels = c("Conifer",  "Deciduous")) +
+  facet_wrap(~SITE)
+
 # averages ########################
-dens_plot %>%
+av <- dens_plot %>%
   group_by(SITE, TREAT) %>%
-  summarise(mean(COUNT_M))
+  summarise(av = mean(COUNT_M))
+
+av$av <- round(av$av, digits = 3)
