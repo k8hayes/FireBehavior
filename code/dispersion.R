@@ -109,8 +109,7 @@ data$DIST_M <- as.numeric(data$DIST_M)
   # Eberhardt's statistic #############################
   frame <- data %>%
     group_by(SITE, TREAT, PLOT, Frame) %>%
-    summarise(min = min(DIST_M)) %>%
-    group_by(SITE, TREAT, PLOT) %>%
+    summarise(min = min(DIST_M)) %>%    group_by(SITE, TREAT, PLOT) %>%
     summarise(AV = mean(min), SD = sd(min))
   
   frame$EB <- (frame$SD/frame$AV)^2 + 1
