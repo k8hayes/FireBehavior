@@ -67,7 +67,17 @@ dens_div %>%
                     name = " ",
                     labels = c("Conifer",  "Deciduous")) +
   facet_wrap(~SITE)
+# FigX_treedensity #550 x 350
 
+# pool site
+dens_div %>%
+  ggplot(aes(x = as.factor(TREAT), y = COUNT_M, fill = DIV)) + 
+  geom_boxplot()  + ylim(0,1) + 
+  labs(x = "Number of Fires", y = "Density (stems/m)", 
+       title = "Tree Density across Reburns") + 
+  scale_fill_manual(values = c("#99d8c9",  "#dfc27d"),
+                    name = " ",
+                    labels = c("Conifer",  "Deciduous")) 
 # averages ########################
 av <- dens_plot %>%
   group_by(SITE, TREAT) %>%

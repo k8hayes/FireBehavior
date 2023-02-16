@@ -203,7 +203,7 @@ rm(pime_loc, bene_loc, potr_loc, salix_loc, alcr_loc)
 rm(bene_height, potr_height, pime_height, salix_height, alcr_height)
 
 loc$HEIGHT_M <- round(loc$HEIGHT_M, digits = 2)
-hist(loc$HEIGHT_M)
+# hist(loc$HEIGHT_M)
 
 live <- loc %>%
   filter(LIVE_DEAD == 1)
@@ -298,11 +298,11 @@ rm(pime_loc, potr_loc, alcr_loc, salix_loc, bene_loc,
 
 #### Stem ###############################
 loc$STEM_BIOMASS <- 0
-loc$STEM_BIOMASS[loc$SPP == "PIME"] <-  117.91*(loc$DBH[loc$SPP == "PIME"]^1.99) # Alexander et al. 2012
-loc$STEM_BIOMASS[loc$SPP == "POTR"] <-  64.01*(loc$DBH[loc$SPP == "POTR"]^2.51) # Alexander et al. 2012
-loc$STEM_BIOMASS[loc$SPP == "BENE"] <-  147.96*(loc$DBH[loc$SPP == "BENE"]^2.25) # Alexander et al. 2012
+loc$STEM_BIOMASS[loc$SPP == "PIME"] <- 10^(3.011 + 1.202*(log10(loc$DBH[loc$SPP == "PIME"])) + -0.01*(15) + 0.011*(log10(loc$DBH[loc$SPP == "PIME"])*15)) * 1.057
+loc$STEM_BIOMASS[loc$SPP == "POTR"] <- 10^(2.614 + 0.852*(log10(loc$DBH[loc$SPP == "POTR"]))  + 0.026*(log10(loc$DBH[loc$SPP == "POTR"])*15)) * 1.043
+loc$STEM_BIOMASS[loc$SPP == "BENE"] <- 10^(2.462 + 1.095*(log10(loc$DBH[loc$SPP == "BENE"]))) * 1.032
 loc$STEM_BIOMASS[loc$SPP == "ALCR"] <-  exp(4.5 + 2.3*log(loc$DBH[loc$SPP == "ALCR"])) # Binkley et al. 1984
-loc$STEM_BIOMASS[loc$SPP == "SALIX"] <- 10^(2.167 + 1.03*log10(loc$DBH[loc$SPP == "SALIX"])) # Bond-Lamberty et al. 2002
+loc$STEM_BIOMASS[loc$SPP == "SALIX"] <-10^(2.481 + 1.19*(log10(loc$DBH[loc$SPP == "SALIX"])) ) * 1.121
 
 # biomass_stem <- dbh %>% 
 #   filter(TREAT == 1) %>%
@@ -323,12 +323,11 @@ loc$STEM_BIOMASS[loc$SPP == "SALIX"] <- 10^(2.167 + 1.03*log10(loc$DBH[loc$SPP =
 #                                            sd = biomass_stem$SD[biomass_stem$SPP == "SALIX"])
 # #### Foliage ####################
 loc$FOL_BIOMASS <- 0
-loc$FOL_BIOMASS[loc$SPP == "PIME"] <-  55.4*(loc$DBH[loc$SPP == "PIME"]^1.47) # Alexander et al. 2012
-loc$FOL_BIOMASS[loc$SPP == "POTR"] <-  18.98*(loc$DBH[loc$SPP == "POTR"]^1.53) # Alexander et al. 2012
-loc$FOL_BIOMASS[loc$SPP == "BENE"] <-  6.39*(loc$DBH[loc$SPP == "BENE"]^2.1) # Alexander et al. 2012
+loc$FOL_BIOMASS[loc$SPP == "PIME"] <- 10^(3.016 + 0.680*(log10(loc$DBH[loc$SPP == "PIME"])) + -0.02*(15) + 0.017*(log10(loc$DBH[loc$SPP == "PIME"])*15)) * 1.08
+loc$FOL_BIOMASS[loc$SPP == "POTR"] <- 10^(1.961 + 0.909*(log10(loc$DBH[loc$SPP == "POTR"])) + -0.023*(15) + 0.021*(log10(loc$DBH[loc$SPP == "POTR"])*15)) * 1.121
+loc$FOL_BIOMASS[loc$SPP == "BENE"] <- 10^(2.253 + 0*(log10(loc$DBH[loc$SPP == "BENE"])) + -0.055*(15)) * 1.03
 loc$FOL_BIOMASS[loc$SPP == "ALCR"] <-  10^(1.82 + 2.38*log10(loc$DBH[loc$SPP == "ALCR"])) # Binkley et al. 1984
 loc$FOL_BIOMASS[loc$SPP == "SALIX"] <- 10^(2.023 + 1.065*log10(loc$DBH[loc$SPP == "SALIX"])) # Bond-Lamberty et al. 2002
-
 # biomass_fol <- dbh %>% 
 #   filter(TREAT == 1) %>%
 #   group_by(SPP) %>%
@@ -379,29 +378,41 @@ trees3 <- mutate(loc,
 
 length(which(trees3$export == "TRUE")) # 3578 # can do 4096 total
 
-ggplot(trees3, aes(x,y,col=export)) + geom_point() + coord_equal()
+# ggplot(trees3, aes(x,y,col=export)) + geom_point() + coord_equal()
 
-#Make tree list ready for WFDS
-trees_WFDS = mutate(trees3,
-                    wfds_canopy = if_else(LIVE_DEAD==0, "", 
-                                          paste0("&TREE XYZ=", round(x,1), ",", round(y,1),
-                                                 ",0,PART_ID='TREE',FUEL_GEOM='CYLINDER',CROWN_WIDTH=", round(CROWN_WIDTH_M,1),
-                                                 ",CROWN_BASE_HEIGHT=", round(CROWN_BASE_HEIGHT,1),
-                                                 ",TREE_HEIGHT=", round(HEIGHT_M,1),
-                                                 ",OUTPUT_TREE=.", export,
-                                                 ".,LABEL='", paste0('tree',id), "' /")),
-                    wfds_stem = if_else(CROWN_BASE_HEIGHT==0, '', 
-                                        paste0("&TREE XYZ=",round(x,1), ",", round(y,1),
-                                               ",0,PART_ID='TRUNK',FUEL_GEOM='CYLINDER',CROWN_WIDTH=",round(DBH_M/100,1),
-                                               ",CROWN_BASE_HEIGHT=0",
-                                               ",TREE_HEIGHT=",CROWN_BASE_HEIGHT,"/"
-                                        ))
-)
+# Make tree list ready for WFDS
+#  trees_WFDS = mutate(trees3,
+#                     wfds_canopy = if_else(LIVE_DEAD==0, "", 
+#                                           paste0("&TREE XYZ=", round(x,1), ",", round(y,1),
+#                                                  ",0,PART_ID='TREE',FUEL_GEOM='CYLINDER',CROWN_WIDTH=", round(CROWN_WIDTH_M,1),
+#                                                  ",CROWN_BASE_HEIGHT=", round(CROWN_BASE_HEIGHT,1),
+#                                                  ",TREE_HEIGHT=", round(HEIGHT_M,1),
+#                                                  ",OUTPUT_TREE=.", export,
+#                                                  ".,LABEL='", paste0('tree',id), "' /")),
+#                     wfds_stem = if_else(CROWN_BASE_HEIGHT==0, '', 
+#                                         paste0("&TREE XYZ=",round(x,1), ",", round(y,1),
+#                                                ",0,PART_ID='TRUNK',FUEL_GEOM='CYLINDER',CROWN_WIDTH=",round(DBH_M/100,1),
+#                                                ",CROWN_BASE_HEIGHT=0",
+#                                                ",TREE_HEIGHT=",CROWN_BASE_HEIGHT,"/"
+#                                         ))
+# )
 
-write.csv(trees_WFDS, here("data/output/tree_WFDS_3x_random.csv"), row.names = FALSE)
+# write.csv(trees_WFDS, here("data/output/tree_WFDS_3x_random.csv"), row.names = FALSE)
 
 # Note that all trees get labelled but only those trees in the area of interest (where export == TRUE)
 # will actually have their heating and mass tracked
 # Also, length units are in meters so dbh, commonly measured in cm, are expressed in m.
 
+# Pulling numbers for table
 
+AV <- loc
+AV$Biomass <- AV$STEM_BIOMASS + AV$FOL_BIOMASS
+
+AV %>% # 1 = live
+  group_by(LIVE_DEAD) %>%
+  summarise(AV_dbh = mean(DBH_CM),
+            SD_dbh = sd(DBH_CM),
+            SUM_dbh = sum(DBH_CM) / (800*300),
+            AV_biomass = mean(Biomass),
+            SD_biomass = sd(Biomass ),
+            n = n() / (800*300))

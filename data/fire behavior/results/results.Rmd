@@ -1,0 +1,355 @@
+---
+title: "WFDS Alaska"
+author: "Justin Ziegler"
+date: "10/11/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(spatstat)
+library(segmented)
+
+results = as_tibble(expand.grid(
+  state = c('1x','3x'),
+  fuels = c('meanfuel','hifuel'),
+  wx = c('hiwx','modwx'))) %>%
+  mutate(treelist = list(rep(NA,8)),
+         bndry = list(rep(NA,8)),
+         sim= paste(state,fuels,wx,sep = '_'))
+
+#results = filter(results, 
+#                 !(sim == '1x_hifuel_hiwx'|
+#                   sim == '1x_hifuel_modwx'))
+
+headfolder = '/Users/katherinehayes/Library/CloudStorage/GoogleDrive-k8rhayes@gmail.com/My Drive/Projects/Reburns/Chapters/Flammabllity/data/fire behavior/results/wfdsresults/'
+
+
+for (i in 1:nrow(results)){
+  #Read in tracked trees
+  ifolder = paste0(headfolder,'/',results$sim[i])
+  results$treelist[[i]] = read_csv(paste0(ifolder,"/treelist.csv"),
+                                   show_col_types = FALSE) %>% 
+    separate(tree,sep = '_tree',into=c(NA,'tree')) %>%
+    separate(tree,into='tree')
+  
+  #Extract characteristics of tracked trees
+ ifile = read_delim(list.files(ifolder,
+                               pattern = 'burn.txt',
+                               full.names = TRUE)[1],
+                    delim='/n')
+
+  names(ifile) = 'col'
+
+  #Calculate tracked tree crown consumption
+  results$treelist[[i]] = left_join(
+    filter(ifile, str_detect(col, 'OUTPUT_TREE=.TRUE.'))  %>%
+    separate(col, sep = '=', 
+             into =c(NA,'xyz','spp',NA,'cw','cbh','ht',NA,'id')) %>%
+    separate(xyz, into =c('x','y')) %>%
+    separate(spp, into =c(NA,'spp')) %>%
+    separate(cw, into =c('cw'),sep = ',') %>%
+    separate(cbh, into =c('cbh'),sep = ',') %>%
+    separate(ht, into =c('ht'),sep = ',') %>%
+    separate(id, into =c(NA,'id'),sep = 'tree') %>%
+    separate(id, into =c('id')) %>%
+    rename(tree=id), 
+    results$treelist[[i]]) %>% 
+    mutate(cc = 1-minfuel/maxfuel,  
+           x = as.numeric(x),
+           y = as.numeric(y),
+           x = x - 360)
+  
+  #Pull in all trees - tracked and nontracked
+  results$fulltreelist[[i]] = 
+    filter(ifile, str_detect(col, "&TREE")) %>%
+    separate(col, sep = '=',
+             into =c(NA,'xyz','spp',NA,'cw','cbh','ht')) %>%
+    separate(xyz, into =c('x','y')) %>%
+    separate(spp, into =c(NA,'spp')) %>%
+    separate(cw, into =c('cw'),sep = ',') %>%
+    separate(cbh, into =c('cbh'),sep = ',') %>%
+    separate(ht, into =c('ht'),sep = ',') %>%
+    mutate(x = as.numeric(x) -360,
+           y = as.numeric(y),
+           cw = as.numeric(cw),
+           cbh = as.numeric(cbh),
+           ht = as.numeric(ht),
+           vol = ifelse(spp=='PIME',pi*(cw/2)^2*ht/3,pi*(cw/2)^2*ht),
+           mass = ifelse(spp=='PIME',vol*.5,vol*.2))
+  
+  #Make map of crown mass
+  results$fulltreelistmap[[i]] = with(
+    results$fulltreelist[[i]],
+    ppp(x,y,c(-350,200),c(25,95),marks = mass)) %>%
+    Smooth(eps=1) %>% 
+    as_tibble() %>%
+    rename(mass = value)
+  
+  #Read in surface fuels
+  results$surffuel[[i]] = full_join(
+    filter(ifile, str_detect(col, ",0,0,SURF_ID='bare' /")) %>%
+      separate(col, sep="=", into =c(NA,'surf')) %>%
+      separate(surf, into=c('x',NA,'y')) %>%
+       mutate(class='bare',
+              x = as.numeric(x),
+              y = as.numeric(y)),
+    expand.grid(x = 360:559,y=25:94)) %>%
+    mutate(class = replace_na(class,'fuel'),
+           load = case_when(
+             results$state[[i]]=='1x' & class == 'fuel' ~ .1108,
+             results$state[[i]]=='3x' & class == 'fuel' ~ .0373,
+             class == 'bare' ~ .044),
+             x = x-360)
+  
+  #Read in wind
+  results$wind[[i]] = 
+    bind_cols(
+      bind_rows(
+        read_csv(paste0(ifolder,'/wind8.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind9.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind10.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind11.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind12.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind13.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind14.csv'),col_names = FALSE)),
+      bind_rows(
+        read_csv(paste0(ifolder,'/wind15.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind16.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind17.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind18.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind19.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind20.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind21.csv'),col_names = FALSE)),
+      bind_rows(
+        read_csv(paste0(ifolder,'/wind22.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind23.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind24.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind25.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind26.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind27.csv'),col_names = FALSE),
+        read_csv(paste0(ifolder,'/wind28.csv'),col_names = FALSE))) %>%
+    mutate(y = paste0('y',1:147)) %>%
+    pivot_longer(!y) %>% 
+    mutate(x=rep(1:603,147)) %>%
+    dplyr::select(-name) %>%
+    separate(y, into=c(NA,'y'),sep='y') %>%
+    mutate(y = as.numeric(y),
+           y = 25 + 70*y/147,
+           x = (260 + 300*x/603)-360) %>%
+    rename(windspd = value)
+  
+  #Read in time of arrival
+  results$bndry[[i]] = bind_rows(
+    read_csv(paste0(ifolder,'/TOAbndry1.csv'),col_names = FALSE),
+    read_csv(paste0(ifolder,'/TOAbndry2.csv'),col_names = FALSE)) 
+  
+  names(results$bndry[[i]]) = paste0('y',1:ncol(results$bndry[[i]]))
+  
+  results$bndry[[i]] = mutate(results$bndry[[i]],
+                              x = paste0('x',1:nrow(results$bndry_pre[[i]]))) %>%
+    pivot_longer(!x) %>%
+    separate(x,sep='x',into=c(NA,'x')) %>%
+    separate(name,sep='y',into=c(NA,'y')) %>%
+    mutate(x = as.numeric(x)/2,y = as.numeric(y)/2) %>%
+    rename(toa = value)
+  
+  #Simplify TOA cell 
+   results$ros[[i]] = tibble(
+    x=1:200,
+    toa = predict(loess(toa~x,results$bndry[[i]],span = 0.75),
+                  newdata = tibble(x=1:200)),
+    ros = 1/(toa - lag(toa)))
+}
+  
+
+
+
+
+results$segmentcc = 
+  list(lm(cc ~ x, data=results$treelist[[1]]),
+       segmented(lm(cc ~ x, data=results$treelist[[2]]), seg.Z = ~x, psi=c(15,35),npsi=2),
+       segmented(lm(cc ~ x, data=results$treelist[[3]]), seg.Z = ~x, psi=c(20,40,60),npsi=3),
+       segmented(lm(cc ~ x, data=results$treelist[[4]]), seg.Z = ~x, psi=c(10,30),npsi=2),
+       segmented(lm(cc ~ x, data=results$treelist[[5]]), seg.Z = ~x, psi=c(30,50),npsi=2),
+       segmented(lm(cc ~ x, data=results$treelist[[6]]), seg.Z = ~x, psi=c(18,25),npsi=2),
+       segmented(lm(cc ~ x, data=results$treelist[[7]]), seg.Z = ~x, psi=c(15,34),npsi=2),
+       segmented(lm(cc ~ x, data=results$treelist[[8]]), seg.Z = ~x, psi=c(18,30),npsi=2)
+       )
+
+results$segmentpredict = list(
+  tibble(x=0:160,
+         cc = predict(results$segmentcc[[1]],newdata = tibble(x=0:160))),
+  tibble(x=0:160,
+         cc = predict(results$segmentcc[[2]],newdata = tibble(x=0:160))),
+  tibble(x=0:160,
+         cc = predict(results$segmentcc[[3]],newdata = tibble(x=0:160))),
+  tibble(x=0:160,
+         cc = predict(results$segmentcc[[4]],newdata = tibble(x=0:160))),
+  tibble(x=0:160,
+         cc = predict(results$segmentcc[[5]],newdata = tibble(x=0:160))),
+  tibble(x=0:160,
+         cc = predict(results$segmentcc[[6]],newdata = tibble(x=0:160))),
+  tibble(x=0:160,
+         cc = predict(results$segmentcc[[7]],newdata = tibble(x=0:160))),
+  tibble(x=0:160,
+         cc = predict(results$segmentcc[[8]],newdata = tibble(x=0:160))))
+for (i in 1:8){
+  results$segmentpredict[[i]] = mutate(results$segmentpredict[[i]],
+                                  cc = ifelse(cc>1,1,cc))} 
+```
+
+## Design
+
+Complete balanced design with:
+
+-   1x and 3x burned
+
+-   Mean canopy fuels and high canopy fuels
+
+-   Extreme burning conditions and moderate burning conditions
+
+## Wind
+
+```{r}
+dplyr::select(results, sim, wind) %>% unnest() %>%
+   ggplot(aes(x,y,fill=windspd)) + geom_raster() + coord_equal() +
+    scale_fill_viridis_c(option='mako') +
+  facet_wrap(~sim)+
+  labs(x = 'X, distance from transition (m)', y = 'Y (m)')
+    
+
+dplyr::select(results, sim, wind) %>% unnest() %>%
+  group_by(sim,x) %>% summarise(windspd = mean(windspd)) %>%
+   ggplot(aes(x,windspd)) + geom_point() +
+  facet_wrap(~sim) +
+  labs(x = 'X, distance from transition (m)', y = 'Wind speed (m/s)')
+    
+  
+```
+
+## Surface fuels
+
+```{r fuels, include=FALSE }
+
+
+group_by(results,state) %>% filter(row_number()==1) %>%
+dplyr::select(state,surffuel) %>% unnest() %>%
+  ggplot(aes(x,y,fill=class)) +
+  geom_raster() +
+  theme_minimal() +
+  coord_equal() +
+  facet_wrap(~state)  +
+  scale_fill_manual('Surface fuel class', 
+                    values = c(topo.colors(10)[10],'forest green'),
+                    labels =c('Litter only','Litter, Herb, Shrub'))+
+   theme(legend.position='bottom') +
+  labs(x = 'X, distance from transition (m)', y = 'Y (m)')
+```
+
+## Canopy Fuels
+
+```{r canfuels, include=FALSE }
+
+dplyr::select(results,sim,fulltreelist) %>% unnest() %>%
+  group_by(sim) %>%
+  filter(x>=0) %>%
+  summarise(fuelload = sum(mass)/(70*200),
+            fueldensity = sum(mass)/(70*200*quantile(ht,.9))
+            )
+
+#Doesn';t look okay.
+#Canopy fuel gradient capped at X kg/m2
+dplyr::select(results,sim,fulltreelistmap) %>% unnest() %>%
+  filter(x>=0) %>% rowwise %>%
+  ggplot(aes(x,y,z=mass)) +
+  geom_contour(binwidth = .05) +
+  theme_minimal() +
+  coord_equal() +
+  facet_wrap(~sim) +
+   theme(legend.position='bottom') +
+  labs(x = 'X, distance from transition (m)', y = 'Y (m)')
+```
+
+## Tree Consumption
+
+You can also embed plots, for example:
+
+```{r pressure, include=FALSE}
+dplyr::select(results,sim,treelist) %>% unnest() %>%
+  ggplot(aes(x,y,fill = cc, size = maxfuel)) +
+  geom_point(pch=21) +
+  coord_equal(expand=FALSE) +
+  facet_wrap(~sim) +
+  scale_fill_viridis_b(option = 'B') +
+  theme_minimal()
+  
+
+
+dplyr::select(results,sim,treelist) %>% unnest() %>%
+  ggplot(aes(x,cc, size = maxfuel)) +
+  geom_point(pch=21) +
+  coord_cartesian(expand = FALSE)  +
+  theme_minimal()+
+  facet_wrap(~sim) +
+  geom_line(
+    data = dplyr::select(results,sim,segmentpredict) %>% unnest(),
+    lwd = 1,
+    col='blue'
+  )
+
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Time of Arrival
+
+```{r, include=FALSE}
+
+group_by(results,sim) %>% filter(row_number()==1) %>%
+dplyr::select(state,surffuel) %>% unnest() %>%
+  ggplot(aes(x,y,fill=class)) +
+  geom_raster() +
+  theme_minimal() +
+  coord_equal(expand=FALSE) +
+  facet_wrap(~sim)  +
+  scale_fill_manual('Surface fuel class', 
+                    values = c(topo.colors(10)[10],'forest green'),
+                    labels =c('Litter only','Litter, Herb, Shrub'))+
+   theme(legend.position='bottom') +
+  labs(x = 'X, distance from transition (m)', y = 'Y (m)') +
+  geom_raster(data = dplyr::select(results, sim, bndry) %>% unnest() %>% na.omit(),
+    aes(x,y+25,z = toa), 
+    inherit.aes = FALSE) +
+  geom_contour(
+    data = dplyr::select(results, sim, bndry) %>% unnest(),
+    aes(x,y+25,z = toa),
+    binwidth = 10000, 
+    inherit.aes = FALSE
+  ) +
+  geom_contour(
+    data = dplyr::select(results, sim, bndry) %>% unnest() %>% group_by(sim),
+    aes(x,y+25,z = toa),
+    binwidth = 10, 
+    inherit.aes = FALSE
+  )
+
+
+```
+
+## Rate of Spread
+
+```{r, include=FALSE}
+
+dplyr::select(results, sim, ros) %>% unnest() %>%
+  ggplot(aes(x,ros)) +
+  geom_line()  +
+  theme_minimal() +
+  facet_wrap(~sim)  +
+  labs(x = 'X, distance from transition (m)', y = 'Rate of Spread (m/s)')
+
+
+  
+```

@@ -15,6 +15,10 @@ dbh <- dbh %>%
   filter(SPP != "ARCTO") %>%
   filter(CANOPY != "NA")
 
+dbh0 <- dbh %>%
+  filter(TREAT == 0)
+summary(dbh0$DBH_CM)
+
 # 1x burn ######################################
 ## Points #########################
   # mean number of trees per plot
@@ -228,6 +232,9 @@ dbh <- dbh %>%
   rm(pime_dbh, potr_dbh, alcr_dbh, salix_dbh, bene_dbh)
   rm(pime_loc, potr_loc, alcr_loc, salix_loc, bene_loc,
      dbh_assign)
+  
+  hist(loc$DBH_CM)
+  summary(loc$DBH_CM)
   
   #### Stem ###############################
   loc$STEM_BIOMASS <- 0

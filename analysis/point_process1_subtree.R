@@ -335,13 +335,13 @@ subtree$m2[subtree$PLOT == "33_1"] <- 100
   #                                            sd = biomass_stem$SD[biomass_stem$SPP == "SALIX"])
   # #### Foliage ####################
   loc$FOL_BIOMASS <- 0
-  loc$FOL_BIOMASS[loc$SPP == "PIME"] <-  55.4*(loc$BD[loc$SPP == "PIME"]^1.47) # Alexander et al. 2012
-  loc$FOL_BIOMASS[loc$SPP == "POTR"] <-  18.98*(loc$BD[loc$SPP == "POTR"]^1.53) # Alexander et al. 2012
-  loc$FOL_BIOMASS[loc$SPP == "BENE"] <-  6.39*(loc$BD[loc$SPP == "BENE"]^2.1) # Alexander et al. 2012
+  loc$FOL_BIOMASS[loc$SPP == "PIME"] <- 10^(3.016 + 0.680*(log10(loc$BD[loc$SPP == "PIME"])) + -0.02*(15) + 0.017*(log10(loc$BD[loc$SPP == "PIME"])*15)) * 1.08
+  loc$FOL_BIOMASS[loc$SPP == "POTR"] <- 10^(1.961 + 0.909*(log10(loc$BD[loc$SPP == "POTR"])) + -0.023*(15) + 0.021*(log10(loc$BD[loc$SPP == "POTR"])*15)) * 1.121
+  loc$FOL_BIOMASS[loc$SPP == "BENE"] <- 10^(2.253 + 0*(log10(loc$BD[loc$SPP == "BENE"])) + -0.055*(15)) * 1.03
   loc$FOL_BIOMASS[loc$SPP == "ALCR"] <-  10^(1.82 + 2.38*log10(loc$BD[loc$SPP == "ALCR"])) # Binkley et al. 1984
   loc$FOL_BIOMASS[loc$SPP == "SALIX"] <- 10^(2.023 + 1.065*log10(loc$BD[loc$SPP == "SALIX"])) # Bond-Lamberty et al. 2002
-  
-  # biomass_fol <- dbh %>% 
+ 
+   # biomass_fol <- dbh %>% 
   #   filter(TREAT == 1) %>%
   #   group_by(SPP) %>%
   #   summarise(AV = mean(FOL_BIOMASS), SD = sd(FOL_BIOMASS)) 
@@ -424,7 +424,7 @@ subtree$m2[subtree$PLOT == "33_1"] <- 100
                                           ))
   )
   
-  write.csv(trees_WFDS, here("data/output/subtree_WFDS_1x.csv"), row.names = FALSE)
+  write.csv(trees_WFDS, here("data/output/subtree/subtree_WFDS_1x.csv"), row.names = FALSE)
   
   #Note that all trees get labelled but only those trees in the area of interest (where export == TRUE)
   # will actually have their heating and mass tracked

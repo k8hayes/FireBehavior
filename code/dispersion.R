@@ -1,4 +1,4 @@
-# Species distances #################
+# Species distances 
 # random distance from point to nearest individual of each spp present on plot
 
 # Set up ###############################
@@ -88,6 +88,7 @@ data$DIST_M <- as.numeric(data$DIST_M)
                                  "Willow"),
                       values = c("#a6cee3","#b2df8a",
                                  "#33a02c","#fb9a99","#e31a1c"))
+  
   # Plotting according to Plot
   plot <- data %>%
     filter(DIST_M != "NA") %>%
@@ -108,39 +109,26 @@ data$DIST_M <- as.numeric(data$DIST_M)
   
   # Eberhardt's statistic #############################
   frame <- data %>%
-    group_by(SITE, TREAT, PLOT, Frame) %>%
-    summarise(min = min(DIST_M)) %>%    group_by(SITE, TREAT, PLOT) %>%
-    summarise(AV = mean(min), SD = sd(min))
+    filter(DIST_M != "NA") %>%
+    filter(SPP != "UNK") %>%
+    filter(SPP != "ARCTO") %>%
+    group_by(TREAT,  SPP) %>%
+    summarise(AV = mean(DIST_M), SD = sd(DIST_M, na.rm = T))
   
   frame$EB <- (frame$SD/frame$AV)^2 + 1
 
-  # with site
-  ggplot(frame, aes(x = as.factor(TREAT), y = EB, fill = SITE)) + 
-    geom_boxplot() + 
-    labs(x = "Number of Fires")
-  
-  # without site
-  ggplot(frame, aes(x = as.factor(TREAT), y = EB)) + geom_boxplot() + labs(x = "Number of Fires") 
-
-  # according to species  
-  spp <- data %>%
-    filter(DIST_M != "NA") %>%
-    group_by(SITE, TREAT, PLOT, SPP, Frame) %>%
-    summarise(min = min(DIST_M)) %>%
-    group_by(SITE, TREAT, PLOT, SPP) %>%
-    summarise(AV = mean(min), SD = sd(min))
-  
-  spp$EB <- (spp$SD/spp$AV)^2 + 1
-  
-  # with site
-  ggplot(spp, aes(x = as.factor(TREAT), y = EB)) + 
-    geom_boxplot() + 
-    labs(x = "Number of Fires")
-  
-  ggplot(spp, aes(x = as.factor(TREAT), y = EB, fill = SPP)) + 
-    geom_boxplot() + 
-    labs(x = "Number of Fires")
-  
+  ggplot(frame, aes(x = as.factor(TREAT), y = EB)) + 
+    geom_boxplot(outlier.shape = NA) + 
+    geom_jitter(mapping = aes(col = SPP), width = 0.18, alpha = 0.8) + 
+    scale_color_manual(name = "Species",
+                       labels = c("Alder",  "Birch", "Spruce", "Aspen",
+                                  "Willow"),
+                       values = c("#a6cee3","#b2df8a",
+                                  "#33a02c","#fb9a99","#e31a1c")) +
+    labs(x = "Number of Fires", 
+         y = "Eberhardt's Statistic") + 
+    geom_hline(yintercept = 1.27, linetype = "dashed", col = "grey")
+  # 425 by 325
   
 # Averages #####################################
  avs <-  data %>%

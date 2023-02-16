@@ -23,7 +23,7 @@ height %>%
   filter(SPP != "POBA") %>%
   filter(CANOPY > 0) %>%
   ggplot(aes(x = as.factor(TREAT), y = HEIGHT_M, fill = SPP)) + 
-  geom_boxplot() + ylim(0,10) + facet_wrap(~SITE, labeller = as_labeller(site_names)) + 
+  geom_boxplot() + ylim(0,10)  + 
   labs(x = "Number of Fires", y = "Height (m)", 
        title = "Species Height Distributions") + 
   scale_fill_manual(values = c("#8c510a",  "#dfc27d",
@@ -39,4 +39,16 @@ av <- height %>%
   group_by(SITE,TREAT, SPP) %>%
   summarise(av = mean(HEIGHT_M)) 
 
+height %>%
+  group_by(TREAT, SPP) %>%
+  summarise(max(HEIGHT_M)) 
+
 av$av <- round(av$av, digits = 2)
+
+# pulling for table 1 in MS
+height$LIVE_DEAD[height$CANOPY == 0] <- "DEAD"
+height$LIVE_DEAD[height$CANOPY != 0] <- "LIVE"
+
+live <- height %>%
+  group_by(TREAT, LIVE_DEAD) %>%
+  summarise(mean = mean(HEIGHT_M), SD = sd(HEIGHT_M, na.rm = T))
