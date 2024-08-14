@@ -259,7 +259,7 @@ meanmod <- wind_sum %>%
   geom_line(aes(x = x, y = windspdAV, col = burn)) +
   geom_ribbon(aes(x, ymin = low, ymax = high, fill = burn), alpha = 0.2) + 
   labs(x = 'X, distance from transition (m)', y = 'Wind speed (m/s)',
-       title = "Mean Fuel x Moderate Wx") + theme_half_open() + 
+       title = "Mean Fuel x Moderate Weather") + theme_half_open() + 
     background_grid() + 
   scale_color_manual(values = c("#74c476", "#fd8d3c")) + 
   scale_fill_manual(values = c("#74c476", "#fd8d3c")) +
@@ -272,7 +272,7 @@ meanhi <- wind_sum %>%
   geom_line(aes(x = x, y = windspdAV, col = burn)) +
   geom_ribbon(aes(x, ymin = low, ymax = high, fill = burn), alpha = 0.2) + 
   labs(x = 'X, distance from transition (m)', y = 'Wind speed (m/s)',
-       title = "Mean Fuel x Extreme Wx") + theme_half_open() + 
+       title = "Mean Fuel x Extreme Weather") + theme_half_open() + 
     background_grid() + 
   scale_color_manual(values = c("#74c476", "#fd8d3c")) + 
   scale_fill_manual(values = c("#74c476", "#fd8d3c")) +
@@ -285,7 +285,7 @@ himod <- wind_sum %>%
   geom_line(aes(x = x, y = windspdAV, col = burn)) +
   geom_ribbon(aes(x, ymin = low, ymax = high, fill = burn), alpha = 0.2) + 
   labs(x = 'X, distance from transition (m)', y = 'Wind speed (m/s)',
-       title = "High Fuel x Moderate Wx") + theme_half_open() + 
+       title = "High Fuel x Moderate Weather") + theme_half_open() + 
     background_grid() + 
   scale_color_manual(values = c("#74c476", "#fd8d3c")) + 
   scale_fill_manual(values = c("#74c476", "#fd8d3c")) +
@@ -298,7 +298,7 @@ highhigh <- wind_sum %>%
   geom_line(aes(x = x, y = windspdAV, col = burn)) +
   geom_ribbon(aes(x, ymin = low, ymax = high, fill = burn), alpha = 0.2) + 
   labs(x = 'X, distance from transition (m)', y = 'Wind speed (m/s)',
-       title = "High Fuel x Extreme Wx") + theme_half_open() + 
+       title = "High Fuel x Extreme Weather") + theme_half_open() + 
     background_grid() + 
   scale_color_manual(values = c("#74c476", "#fd8d3c")) + 
   scale_fill_manual(values = c("#74c476", "#fd8d3c")) +
