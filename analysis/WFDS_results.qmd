@@ -222,6 +222,7 @@ ggplot(wind, aes(x,y,fill=windspd)) + geom_raster() + coord_equal() +
 ```
 
 ## wind summary
+
 ```{r}
 
 wind_sum <- wind %>%
@@ -247,7 +248,11 @@ wind_sum <- wind %>%
                                             "moderate"))))) %>%
   mutate(wx = factor(wx, levels = c("moderate", "high")),
          fuel = factor(fuel, levels = c("mean", "high")))
+```
 
+### wind sum plots
+
+```{r}
 meanmod <- wind_sum %>%
   filter(sim == "1x_meanfuel_modwx" | sim == "3x_meanfuel_modwx") %>%
   ggplot() + 
@@ -258,7 +263,8 @@ meanmod <- wind_sum %>%
     background_grid() + 
   scale_color_manual(values = c("#74c476", "#fd8d3c")) + 
   scale_fill_manual(values = c("#74c476", "#fd8d3c")) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") + 
+  ylim(c(-.75, 5.5))
 
 meanhi <- wind_sum %>%
   filter(sim == "1x_meanfuel_hiwx" | sim == "3x_meanfuel_hiwx") %>%
@@ -270,7 +276,8 @@ meanhi <- wind_sum %>%
     background_grid() + 
   scale_color_manual(values = c("#74c476", "#fd8d3c")) + 
   scale_fill_manual(values = c("#74c476", "#fd8d3c")) +
-  theme(legend.position = "none")
+  theme(legend.position = "none")  + 
+  ylim(c(-.75, 5.5))
 
 himod <- wind_sum %>%
   filter(sim == "1x_hifuel_modwx" | sim == "3x_hifuel_modwx") %>%
@@ -282,7 +289,8 @@ himod <- wind_sum %>%
     background_grid() + 
   scale_color_manual(values = c("#74c476", "#fd8d3c")) + 
   scale_fill_manual(values = c("#74c476", "#fd8d3c")) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") + 
+  ylim(c(-.75, 5.5))
 
 highhigh <- wind_sum %>%
   filter(sim == "1x_hifuel_hiwx" | sim == "3x_hifuel_hiwx") %>%
@@ -294,7 +302,8 @@ highhigh <- wind_sum %>%
     background_grid() + 
   scale_color_manual(values = c("#74c476", "#fd8d3c")) + 
   scale_fill_manual(values = c("#74c476", "#fd8d3c")) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") + 
+  ylim(c(-.75, 5.5))
 
 ggsave2(plot = meanmod,
         filename = "meanmod.png",
