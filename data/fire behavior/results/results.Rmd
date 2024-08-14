@@ -195,6 +195,7 @@ results$segmentpredict = list(
          cc = predict(results$segmentcc[[7]],newdata = tibble(x=0:160))),
   tibble(x=0:160,
          cc = predict(results$segmentcc[[8]],newdata = tibble(x=0:160))))
+
 for (i in 1:8){
   results$segmentpredict[[i]] = mutate(results$segmentpredict[[i]],
                                   cc = ifelse(cc>1,1,cc))} 
@@ -274,7 +275,6 @@ dplyr::select(results,sim,fulltreelistmap) %>% unnest() %>%
 
 ## Tree Consumption
 
-You can also embed plots, for example:
 
 ```{r pressure, include=FALSE}
 dplyr::select(results,sim,treelist) %>% unnest() %>%
@@ -302,7 +302,7 @@ dplyr::select(results,sim,treelist) %>% unnest() %>%
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
 
 ## Time of Arrival
 
