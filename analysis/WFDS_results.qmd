@@ -104,7 +104,7 @@ for (i in 1:nrow(results)){
               x = as.numeric(x),
               y = as.numeric(y)),
     expand.grid(x = 360:559,y=25:94)) %>%
-    mutate(class = replace_na(class,'fuel'),
+    mutate(class = replace_na(class,'fuel'), 
            load = case_when(
              results$state[[i]]=='1x' & class == 'fuel' ~ .1108,
              results$state[[i]]=='3x' & class == 'fuel' ~ .0373,
@@ -151,23 +151,22 @@ for (i in 1:nrow(results)){
   #Read in time of arrival
   results$bndry[[i]] = bind_rows(
     read_csv(paste0(ifolder,'/TOAbndry1.csv'),col_names = FALSE),
-    read_csv(paste0(ifolder,'/TOAbndry2.csv'),col_names = FALSE),
-    read_csv(paste0(ifolder,'/TOAbndry3.csv'),col_names = FALSE)) 
+    read_csv(paste0(ifolder,'/TOAbndry2.csv'),col_names = FALSE)) 
   
-  names(results$bndry[[i]]) = paste0('y',1:ncol(results$bndry[[i]]))
+  names(results$bndry[[i]]) = paste0('y', 1:ncol(results$bndry[[i]]))
   
   results$bndry[[i]] = mutate(results$bndry[[i]],
-                              x = paste0('x',1:nrow(results$bndry[[i]]))) %>%
+                              x = paste0('x', 1:nrow(results$bndry[[i]]))) %>%
     pivot_longer(!x) %>%
-    separate(x,sep='x',into=c(NA,'x')) %>%
-    separate(name,sep='y',into=c(NA,'y')) %>%
-    mutate(x = as.numeric(x)/2,y = as.numeric(y)/2) %>%
+    separate(x, sep='x',into=c(NA,'x')) %>%
+    separate(name, sep='y',into=c(NA,'y')) %>%
+    mutate(x = as.numeric(x)/2, y = as.numeric(y)/2) %>%
     rename(toa = value)
   
   #Simplify TOA cell 
    results$ros[[i]] = tibble(
     x=1:200,
-    toa = predict(loess(toa~x,results$bndry[[i]],span = 0.75),
+    toa = predict(loess(toa~x, results$bndry[[i]], span = 0.75),
                   newdata = tibble(x=1:200)),
     ros = 1/(toa - lag(toa)))
 }
@@ -209,6 +208,15 @@ for (i in 1:8){
   results$segmentpredict[[i]] = mutate(results$segmentpredict[[i]],
                                   cc = ifelse(cc>1,1,cc))} 
 ```
+
+## adding groups
+
+```{r}
+
+
+```
+
+## export results
 
 # wind speed
 
@@ -325,4 +333,103 @@ ggsave2(plot = highhigh,
         path = "/Users/katherinehayes/Google Drive/Projects/Reburns/Chapters/Flammabllity/output/Figures/windSpeed/",
         width = 6, height = 5, units = "in")
   
+```
+
+# rate of spread
+
+```{r}
+ros <- dplyr::select(results, sim, ros) %>% 
+  unnest() %>%
+  mutate(burn = ifelse(sim == "1x_meanfuel_hiwx", "1x", 
+                       ifelse(sim == "1x_meanfuel_modwx", "1x",
+                              ifelse(sim == "1x_hifuel_hiwx", "1x",
+                                     ifelse(sim == "1x_hifuel_modwx", "1x",
+                                            "3x")))),
+         fuel = ifelse(sim == "1x_meanfuel_hiwx", "mean", 
+                       ifelse(sim == "1x_meanfuel_modwx", "mean",
+                              ifelse(sim == "3x_meanfuel_hiwx", "mean",
+                                     ifelse(sim == "3x_meanfuel_modwx", "mean",
+                                            "high")))),
+         wx = ifelse(sim == "1x_meanfuel_hiwx", "high", 
+                       ifelse(sim == "1x_hifuel_hiwx", "high",
+                              ifelse(sim == "3x_meanfuel_hiwx", "high",
+                                     ifelse(sim == "3x_hifuel_hiwx", "high",
+                                            "moderate"))))) %>%
+  mutate(wx = factor(wx, levels = c("moderate", "high")),
+         fuel = factor(fuel, levels = c("mean", "high")))
+
+
+ggplot(ros, aes(x = x, y = ros)) +
+  geom_point()  +
+  theme_minimal() +
+  facet_wrap(~sim)  +
+  labs(x = 'X, distance from transition (m)', y = 'Rate of Spread (m/s)') 
+
+```
+
+```{r}
+meanmod <- ros %>%
+  filter(sim == "1x_meanfuel_modwx" | sim == "3x_meanfuel_modwx") %>%
+  ggplot() + 
+  geom_line(aes(x = x, y = ros, col = burn)) +
+  labs(x = 'X, distance from transition (m)', y = 'Rate of Spread (m/s)',
+       title = "Mean Fuel x Moderate Weather") + theme_half_open() + 
+    background_grid() + 
+  scale_color_manual(values = c("#253494", "#fec44f")) +
+  ylim(c(0,2))
+
+
+himod <- ros %>%
+  filter(sim == "1x_hifuel_modwx" | sim == "3x_hifuel_modwx") %>%
+  ggplot() + 
+  geom_line(aes(x = x, y = ros, col = burn)) +
+  labs(x = 'X, distance from transition (m)', y = 'Rate of Spread (m/s)',
+       title = "Mean Fuel x Moderate Weather") + theme_half_open() + 
+    background_grid() + 
+  scale_color_manual(values = c("#253494", "#fec44f")) +
+  ylim(c(0,2))
+
+meanhi <- ros %>%
+  filter(sim == "1x_meanfuel_hiwx" | sim == "3x_meanfuel_hiwx") %>%
+  ggplot() + 
+  geom_line(aes(x = x, y = ros, col = burn)) +
+  labs(x = 'X, distance from transition (m)', y = 'Rate of Spread (m/s)',
+       title = "Mean Fuel x Moderate Weather") + theme_half_open() + 
+    background_grid() + 
+  scale_color_manual(values = c("#253494", "#fec44f")) +
+  ylim(c(0,2))
+
+hihi <- ros %>%
+  filter(sim == "1x_hifuel_hiwx" | sim == "3x_hifuel_hiwx") %>%
+  ggplot() + 
+  geom_line(aes(x = x, y = ros, col = burn)) +
+  labs(x = 'X, distance from transition (m)', y = 'Rate of Spread (m/s)',
+       title = "Mean Fuel x Moderate Weather") + theme_half_open() + 
+    background_grid() + 
+  scale_color_manual(values = c("#253494", "#fec44f")) +
+  ylim(c(0,2))
+
+
+```
+
+```{r}
+ggsave2(plot = meanmod,
+        filename = "meanmod.png",
+        path = "/Users/katherinehayes/Google Drive/Projects/Reburns/Chapters/Flammabllity/output/Figures/Fig8_ROS/",
+        width = 6, height = 5, units = "in")
+
+ggsave2(plot = meanhi,
+        filename = "meanhi.png",
+        path = "/Users/katherinehayes/Google Drive/Projects/Reburns/Chapters/Flammabllity/output/Figures/Fig8_ROS/",
+        width = 6, height = 5, units = "in")
+
+ggsave2(plot = himod,
+        filename = "himod.png",
+        path = "/Users/katherinehayes/Google Drive/Projects/Reburns/Chapters/Flammabllity/output/Figures/Fig8_ROS/",
+        width = 6, height = 5, units = "in")
+
+ggsave2(plot = hihi,
+        filename = "highhigh.png",
+        path = "/Users/katherinehayes/Google Drive/Projects/Reburns/Chapters/Flammabllity/output/Figures/Fig8_ROS/",
+        width = 6, height = 5, units = "in")
 ```
