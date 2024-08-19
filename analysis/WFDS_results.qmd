@@ -376,6 +376,7 @@ meanmod <- ros %>%
        title = "Mean Fuel x Moderate Weather") + theme_half_open() + 
     background_grid() + 
   scale_color_manual(values = c("#253494", "#fec44f")) +
+  theme(legend.position = "none") +
   ylim(c(0,2))
 
 
@@ -384,9 +385,10 @@ himod <- ros %>%
   ggplot() + 
   geom_line(aes(x = x, y = ros, col = burn)) +
   labs(x = 'X, distance from transition (m)', y = 'Rate of Spread (m/s)',
-       title = "Mean Fuel x Moderate Weather") + theme_half_open() + 
+       title = "High Fuel x Moderate Weather") + theme_half_open() + 
     background_grid() + 
   scale_color_manual(values = c("#253494", "#fec44f")) +
+  theme(legend.position = "none") +
   ylim(c(0,2))
 
 meanhi <- ros %>%
@@ -394,9 +396,10 @@ meanhi <- ros %>%
   ggplot() + 
   geom_line(aes(x = x, y = ros, col = burn)) +
   labs(x = 'X, distance from transition (m)', y = 'Rate of Spread (m/s)',
-       title = "Mean Fuel x Moderate Weather") + theme_half_open() + 
+       title = "Mean Fuel x Extreme Weather") + theme_half_open() + 
     background_grid() + 
   scale_color_manual(values = c("#253494", "#fec44f")) +
+  theme(legend.position = "none") +
   ylim(c(0,2))
 
 hihi <- ros %>%
@@ -404,9 +407,10 @@ hihi <- ros %>%
   ggplot() + 
   geom_line(aes(x = x, y = ros, col = burn)) +
   labs(x = 'X, distance from transition (m)', y = 'Rate of Spread (m/s)',
-       title = "Mean Fuel x Moderate Weather") + theme_half_open() + 
+       title = "High Fuel x Extreme Weather") + theme_half_open() + 
     background_grid() + 
   scale_color_manual(values = c("#253494", "#fec44f")) +
+  theme(legend.position = "none") +
   ylim(c(0,2))
 
 
