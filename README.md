@@ -1,4 +1,4 @@
-# Fuel_structure
+# FireBehavior
 
 This repository contains data and statistical analyses used in the manuscript "Fuel constraints, not fire weather conditions, limit fire behavior in reburned forests" by Katherine Hayes et al., currently in review.
 
